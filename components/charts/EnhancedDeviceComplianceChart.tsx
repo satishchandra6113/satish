@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Sector, Tooltip } from 'recharts';
 import { Shield, ShieldCheck, ShieldOff, ShieldAlert, TrendingUp } from 'lucide-react';
 
 interface DataItem {
@@ -13,6 +13,7 @@ interface EnhancedDeviceComplianceChartProps {
   title?: string;
 }
 
+// Custom Tooltip that shows only the hovered item
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
@@ -20,15 +21,23 @@ const CustomTooltip = ({ active, payload }: any) => {
     const percent = total > 0 ? ((data.value / total) * 100).toFixed(1) : '0';
     
     return (
-      <div className="bg-[#0F0F0F] border border-[#00FF66] rounded-[12px] p-[16px] shadow-xl backdrop-blur-sm">
-        <div className="flex items-center gap-[8px] mb-[8px]">
+      <div 
+        className="bg-[#1A1A1A] border border-[#00FF66] rounded-[8px] p-[12px] shadow-lg"
+        style={{
+          backgroundColor: '#1A1A1A',
+          opacity: 1,
+          position: 'relative',
+          zIndex: 9999
+        }}
+      >
+        <div className="flex items-center gap-[8px] mb-[4px]">
           <div 
             className="w-[12px] h-[12px] rounded-full"
             style={{ backgroundColor: data.color }}
           />
           <p className="text-[#00FF66] font-semibold text-[14px]">{data.name}</p>
         </div>
-        <p className="text-[#D5FFD6] text-[20px] font-bold mb-[4px]">{data.value.toLocaleString()}</p>
+        <p className="text-[#D5FFD6] text-[16px] font-bold mb-[4px]">{data.value.toLocaleString()}</p>
         <p className="text-[#8F8F8F] text-[12px]">{percent}% compliance rate</p>
       </div>
     );
@@ -90,7 +99,7 @@ export function EnhancedDeviceComplianceChart({ data, title = "Device Compliance
       {/* Header */}
       <div className="flex items-start justify-between mb-[12px] sm:mb-[16px] lg:mb-[20px] flex-shrink-0">
         <div className="flex-1 min-w-0">
-          <h4 className="text-[12px] sm:text-[13px] lg:text-[14px] font-medium text-[#D5FFD6] mb-[4px] sm:mb-[6px] lg:mb-[8px]">{title}</h4>
+          <h4 className="text-[12px] sm:text-[13px] lg:text-[14px] font-medium text-white mb-[4px] sm:mb-[6px] lg:mb-[8px]">{title}</h4>
           <div className="flex items-baseline gap-[4px] sm:gap-[6px] lg:gap-[8px]">
             <p className="text-[20px] sm:text-[24px] lg:text-[28px] font-bold text-[#00FF66]">{complianceRate}%</p>
             <span className="text-[10px] sm:text-[11px] lg:text-[12px] text-[#8F8F8F]">compliant</span>
@@ -147,7 +156,7 @@ export function EnhancedDeviceComplianceChart({ data, title = "Device Compliance
                     fill={isCompliant ? "url(#compliantGradient)" : entry.color}
                     stroke="none"
                     style={{
-                      opacity: hoveredIndex === null ? 1 : isActive ? 1 : 0.4,
+                      opacity: hoveredIndex === null ? 1 : activeIndex === index ? 1 : 1,
                       filter: isActive ? 'url(#complianceGlow)' : 'none',
                       transition: 'all 0.3s ease',
                       cursor: 'pointer',
@@ -159,21 +168,33 @@ export function EnhancedDeviceComplianceChart({ data, title = "Device Compliance
             <Tooltip 
               content={<CustomTooltip />}
               cursor={false}
+              contentStyle={{
+                backgroundColor: '#1A1A1A',
+                border: 'none',
+                borderRadius: '0',
+                padding: '0',
+                opacity: 1
+              }}
+              wrapperStyle={{
+                backgroundColor: 'transparent',
+                opacity: 1,
+                zIndex: 9999
+              }}
             />
           </PieChart>
         </ResponsiveContainer>
         
-        {/* Center display - constrained to inner circle (50% of container to avoid touching) */}
+        {/* Center display - constrained to inner circle (55% of container) */}
         <div 
           className="absolute flex items-center justify-center pointer-events-none"
           style={{
             left: '50%',
             top: '50%',
             transform: 'translate(-50%, -50%)',
-            width: '50%',
-            height: '50%',
-            maxWidth: '50%',
-            maxHeight: '50%'
+            width: '55%',
+            height: '55%',
+            maxWidth: '55%',
+            maxHeight: '55%'
           }}
         >
           <div className="text-center w-full h-full flex flex-col items-center justify-center px-[6px]">
@@ -256,7 +277,7 @@ export function EnhancedDeviceComplianceChart({ data, title = "Device Compliance
                   <p
                     className="text-[10px] sm:text-[11px] lg:text-[12px] font-medium mb-[2px] truncate"
                     style={{
-                      color: isActive ? '#00FF66' : '#D5FFD6',
+                      color: isActive ? '#00FF66' : '#FFFFFF',
                     }}
                   >
                     {item.name}
@@ -284,7 +305,7 @@ export function EnhancedDeviceComplianceChart({ data, title = "Device Compliance
                 </div>
               </div>
               <div className="ml-[8px] sm:ml-[10px] lg:ml-[12px] text-right flex-shrink-0">
-                <p className="text-[14px] sm:text-[15px] lg:text-[16px] font-bold text-[#D5FFD6]">{item.value.toLocaleString()}</p>
+                <p className="text-[14px] sm:text-[15px] lg:text-[16px] font-bold text-white">{item.value.toLocaleString()}</p>
                 <p className="text-[9px] sm:text-[9.5px] lg:text-[10px] text-[#8F8F8F]">devices</p>
               </div>
             </div>
