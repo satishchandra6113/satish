@@ -10,7 +10,7 @@ import { EnhancedDonutChart } from '../charts/EnhancedDonutChart';
 import { EnhancedActiveUsersChart } from '../charts/EnhancedActiveUsersChart';
 import { EnhancedDeviceHealthChart } from '../charts/EnhancedDeviceHealthChart';
 import { EnhancedDeviceComplianceChart } from '../charts/EnhancedDeviceComplianceChart';
-import BubbleMap from '../../imports/BubbleMap';
+import { BubbleMap } from '../charts/BubbleMap';
 
 export function CybercykoDashboard() {
   // Total Users Data

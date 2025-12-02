@@ -5,13 +5,16 @@ import { CybercykoDashboard } from './components/pages/CybercykoDashboard';
 import { UsersPage } from './components/UsersPage';
 import { BillingPage } from './components/pages/BillingPage';
 import { ProfilePage } from './components/pages/ProfilePage';
+import { DevicesPage } from './components/pages/DevicesPage';
+import { PoliciesPage } from './components/pages/PoliciesPage';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const pageConfig = {
     dashboard: { title: 'Dashboard', component: CybercykoDashboard },
+    devices: { title: 'Devices', component: DevicesPage },
+    policies: { title: 'Policies', component: PoliciesPage },
     users: { title: 'Users Management', component: UsersPage },
     billing: { title: 'Billing', component: BillingPage },
     profile: { title: 'Profile Settings', component: ProfilePage },
@@ -29,21 +32,14 @@ export default function App() {
       <CybercykoSidebar
         currentPage={currentPage}
         onNavigate={setCurrentPage}
-        isOpen={sidebarOpen}
-        onToggle={() => setSidebarOpen(!sidebarOpen)}
+        isOpen={false}
+        onToggle={() => {}}
       />
 
       {/* Main Content */}
-      <div
-        className={`transition-all duration-300 ${
-          sidebarOpen ? 'ml-[240px]' : 'ml-[80px]'
-        }`}
-        onClick={() => {
-          // Close sidebar when clicking on main content if it's open
-          if (sidebarOpen) {
-            setSidebarOpen(false);
-          }
-        }}
+      <div 
+        className="main-content ml-[80px]"
+        style={{ transition: 'margin-left 0.18s cubic-bezier(0.4, 0, 0.2, 1)' }}
       >
         {/* Top Bar */}
         <CybercykoTopBar

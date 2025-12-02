@@ -117,3 +117,34 @@ input[type="range"].slider::-moz-range-thumb {
 .animate-shimmer {
   animation: shimmer 3s infinite;
 }
+
+/* Custom Scrollbar Styling - Dark Theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0A0A0A;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1A1A1A;
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2A2A2A;
+}
+
+::-webkit-scrollbar-corner {
+  background: #0A0A0A;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #1A1A1A #0A0A0A;
+}

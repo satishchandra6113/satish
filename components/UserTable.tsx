@@ -1,10 +1,22 @@
+import { useState } from 'react';
 import { User } from '../types/user';
 
 interface UserTableProps {
   users: User[];
 }
 
-export function UserTable({ users }: UserTableProps) {
+export function UserTable({ users: initialUsers }: UserTableProps) {
+  const [users, setUsers] = useState(initialUsers.map(user => ({
+    ...user,
+    isActive: user.isActive ?? true // Default to active
+  })));
+
+  const toggleUserActive = (userId: string) => {
+    setUsers(prev => prev.map(user => 
+      user.id === userId ? { ...user, isActive: !user.isActive } : user
+    ));
+  };
+
   const getRoleStyle = (role: string) => {
     const styles: { [key: string]: string } = {
       'Customer Success': 'text-[#00FF66] border border-[#00FF66]/20 bg-[#00FF66]/5',
@@ -25,6 +37,7 @@ export function UserTable({ users }: UserTableProps) {
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Roles / Groups</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Last Login</th>
+              <th className="px-6 py-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Active / Inactive</th>
             </tr>
           </thead>
           <tbody>
@@ -33,7 +46,7 @@ export function UserTable({ users }: UserTableProps) {
                 key={user.id}
                 className="border-b border-[#1A1A1A] hover:bg-[#1A1A1A] transition-colors cursor-pointer"
               >
-                <td className="px-6 py-4 w-[35%]">
+                <td className="px-6 py-4 w-[30%]">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-[#1A1A1A] flex items-center justify-center text-gray-500 overflow-hidden border border-[#2A2A2A]">
                       {user.avatar ? (
@@ -66,6 +79,30 @@ export function UserTable({ users }: UserTableProps) {
                   <span className="text-gray-400 text-sm">
                     {user.lastLogin}
                   </span>
+                </td>
+                <td className="px-6 py-4 text-center">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleUserActive(user.id);
+                    }}
+                    className={`relative w-14 h-7 rounded-full transition-all duration-300 inline-block ${
+                      user.isActive 
+                        ? 'bg-[#00FF66]' 
+                        : 'bg-[#2A2A2A]'
+                    }`}
+                  >
+                    <div
+                      className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-transform duration-300 shadow-md ${
+                        user.isActive ? 'translate-x-8' : 'translate-x-1'
+                      }`}
+                    />
+                    {user.isActive && (
+                      <svg className="absolute left-2 top-1.5 w-4 h-4 text-[#0F0F0F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
                 </td>
               </tr>
             ))}

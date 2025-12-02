@@ -6,4 +6,5 @@ export interface User {
     status: 'Verified' | 'Pending' | 'Suspended';
     lastLogin: string;
     avatar?: string | null;
+    isActive?: boolean;
 }

@@ -1,28 +1,101 @@
 import { useState } from 'react';
 import { Button } from './Button';
 
+// Country codes list with phone number length
+const COUNTRY_CODES = [
+  { code: '+1', country: 'America', flag: '🇺🇸', digits: 10 },
+  { code: '+1', country: 'Canada', flag: '🇨🇦', digits: 10 },
+  { code: '+44', country: 'UK', flag: '🇬🇧', digits: 10 },
+  { code: '+91', country: 'India', flag: '🇮🇳', digits: 10 },
+  { code: '+86', country: 'China', flag: '🇨🇳', digits: 11 },
+  { code: '+81', country: 'Japan', flag: '🇯🇵', digits: 10 },
+  { code: '+49', country: 'Germany', flag: '🇩🇪', digits: 11 },
+  { code: '+33', country: 'France', flag: '🇫🇷', digits: 9 },
+  { code: '+39', country: 'Italy', flag: '🇮🇹', digits: 10 },
+  { code: '+34', country: 'Spain', flag: '🇪🇸', digits: 9 },
+  { code: '+55', country: 'Brazil', flag: '🇧🇷', digits: 11 },
+  { code: '+52', country: 'Mexico', flag: '🇲🇽', digits: 10 },
+  { code: '+54', country: 'Argentina', flag: '🇦🇷', digits: 10 },
+  { code: '+61', country: 'Australia', flag: '🇦🇺', digits: 9 },
+  { code: '+64', country: 'New Zealand', flag: '🇳🇿', digits: 9 },
+  { code: '+82', country: 'Korea', flag: '🇰🇷', digits: 10 },
+  { code: '+65', country: 'Singapore', flag: '🇸🇬', digits: 8 },
+  { code: '+60', country: 'Malaysia', flag: '🇲🇾', digits: 10 },
+  { code: '+66', country: 'Thailand', flag: '🇹🇭', digits: 9 },
+  { code: '+84', country: 'Vietnam', flag: '🇻🇳', digits: 10 },
+  { code: '+62', country: 'Indonesia', flag: '🇮🇩', digits: 11 },
+  { code: '+63', country: 'Philippines', flag: '🇵🇭', digits: 10 },
+  { code: '+971', country: 'UAE', flag: '🇦🇪', digits: 9 },
+  { code: '+966', country: 'Saudi Arabia', flag: '🇸🇦', digits: 9 },
+  { code: '+972', country: 'Israel', flag: '🇮🇱', digits: 9 },
+  { code: '+90', country: 'Turkey', flag: '🇹🇷', digits: 10 },
+  { code: '+7', country: 'Russia', flag: '🇷🇺', digits: 10 },
+  { code: '+380', country: 'Ukraine', flag: '🇺🇦', digits: 9 },
+  { code: '+48', country: 'Poland', flag: '🇵🇱', digits: 9 },
+  { code: '+31', country: 'Netherlands', flag: '🇳🇱', digits: 9 },
+  { code: '+32', country: 'Belgium', flag: '🇧🇪', digits: 9 },
+  { code: '+41', country: 'Switzerland', flag: '🇨🇭', digits: 9 },
+  { code: '+43', country: 'Austria', flag: '🇦🇹', digits: 10 },
+  { code: '+46', country: 'Sweden', flag: '🇸🇪', digits: 9 },
+  { code: '+47', country: 'Norway', flag: '🇳🇴', digits: 8 },
+  { code: '+45', country: 'Denmark', flag: '🇩🇰', digits: 8 },
+  { code: '+358', country: 'Finland', flag: '🇫🇮', digits: 10 },
+  { code: '+353', country: 'Ireland', flag: '🇮🇪', digits: 9 },
+  { code: '+351', country: 'Portugal', flag: '🇵🇹', digits: 9 },
+  { code: '+30', country: 'Greece', flag: '🇬🇷', digits: 10 },
+  { code: '+20', country: 'Egypt', flag: '🇪🇬', digits: 10 },
+  { code: '+27', country: 'South Africa', flag: '🇿🇦', digits: 9 },
+  { code: '+234', country: 'Nigeria', flag: '🇳🇬', digits: 10 },
+  { code: '+254', country: 'Kenya', flag: '🇰🇪', digits: 9 },
+  { code: '+212', country: 'Morocco', flag: '🇲🇦', digits: 9 },
+  { code: '+92', country: 'Pakistan', flag: '🇵🇰', digits: 10 },
+  { code: '+880', country: 'Bangladesh', flag: '🇧🇩', digits: 10 },
+  { code: '+94', country: 'Sri Lanka', flag: '🇱🇰', digits: 9 },
+  { code: '+977', country: 'Nepal', flag: '🇳🇵', digits: 10 },
+  { code: '+56', country: 'Chile', flag: '🇨🇱', digits: 9 },
+  { code: '+57', country: 'Colombia', flag: '🇨🇴', digits: 10 },
+  { code: '+51', country: 'Peru', flag: '🇵🇪', digits: 9 },
+  { code: '+58', country: 'Venezuela', flag: '🇻🇪', digits: 10 },
+];
+
 interface NewUserModalProps {
   onClose: () => void;
 }
 
 export function NewUserModal({ onClose }: NewUserModalProps) {
-  const [isActive, setIsActive] = useState(true);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
-    username: '',
+    countryCode: '+1',
     phone: '',
-    manager: '',
-    company: '',
     department: '',
-    title: ''
+    designation: ''
   });
   const [customFields, setCustomFields] = useState([
     { id: 1, label: 'Custom Role', value: '' },
     { id: 2, label: 'Country Code', value: '' },
     { id: 3, label: 'Description', value: '' }
   ]);
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [countrySearch, setCountrySearch] = useState('');
+  const [confirmDialog, setConfirmDialog] = useState<{
+    show: boolean;
+    type: 'delete' | 'modify';
+    fieldId: number | null;
+    fieldLabel: string;
+    pendingValue?: string;
+  }>({ show: false, type: 'delete', fieldId: null, fieldLabel: '' });
+
+  const selectedCountry = COUNTRY_CODES.find(c => c.code === formData.countryCode) || COUNTRY_CODES[0];
+  
+  const filteredCountries = countrySearch 
+    ? COUNTRY_CODES.filter(country => 
+        country.country.toLowerCase().includes(countrySearch.toLowerCase()) ||
+        country.code.includes(countrySearch.replace('+', '')) ||
+        country.code.includes(countrySearch)
+      )
+    : COUNTRY_CODES;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,8 +116,64 @@ export function NewUserModal({ onClose }: NewUserModalProps) {
     setCustomFields(customFields.map(f => f.id === id ? { ...f, [field]: value } : f));
   };
 
-  const removeCustomField = (id: number) => {
-    setCustomFields(customFields.filter(f => f.id !== id));
+  const confirmLabelChange = (id: number, newLabel: string) => {
+    const field = customFields.find(f => f.id === id);
+    if (field && field.label && field.label !== newLabel) {
+      setConfirmDialog({
+        show: true,
+        type: 'modify',
+        fieldId: id,
+        fieldLabel: field.label,
+        pendingValue: newLabel
+      });
+    } else {
+      updateCustomField(id, 'label', newLabel);
+    }
+  };
+
+  const handleConfirmAction = () => {
+    if (confirmDialog.type === 'delete' && confirmDialog.fieldId) {
+      setCustomFields(customFields.filter(f => f.id !== confirmDialog.fieldId));
+    } else if (confirmDialog.type === 'modify' && confirmDialog.fieldId && confirmDialog.pendingValue !== undefined) {
+      updateCustomField(confirmDialog.fieldId, 'label', confirmDialog.pendingValue);
+    }
+    setConfirmDialog({ show: false, type: 'delete', fieldId: null, fieldLabel: '' });
+  };
+
+  const handleCancelAction = () => {
+    setConfirmDialog({ show: false, type: 'delete', fieldId: null, fieldLabel: '' });
+  };
+
+  // Handle keyboard events for confirmation dialog
+  useEffect(() => {
+    if (!confirmDialog.show) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        handleConfirmAction();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        handleCancelAction();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [confirmDialog.show, confirmDialog.fieldId, confirmDialog.type, confirmDialog.pendingValue]);
+
+  const requestDeleteField = (id: number) => {
+    const field = customFields.find(f => f.id === id);
+    if (field) {
+      setConfirmDialog({
+        show: true,
+        type: 'delete',
+        fieldId: id,
+        fieldLabel: field.label || 'Custom Field'
+      });
+    }
   };
 
   return (
@@ -87,34 +216,14 @@ export function NewUserModal({ onClose }: NewUserModalProps) {
           {/* Form Content */}
           <div className="flex-1 py-10 pl-8 pr-10">
             <form onSubmit={handleSubmit}>
-              {/* Avatar and Active Status */}
+              {/* Avatar */}
               <div className="mb-12">
-                <div className="flex justify-center mb-8">
+                <div className="flex justify-center">
                   <div className="w-24 h-24 rounded-full bg-[#1A1A1A] flex items-center justify-center text-gray-500 border border-[#2A2A2A]">
                     <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                     </svg>
                   </div>
-                </div>
-
-                <div className="flex justify-end items-center gap-3">
-                  <label className="text-gray-400 text-sm">Active</label>
-                  <button
-                    type="button"
-                    onClick={() => setIsActive(!isActive)}
-                    className={`relative w-12 h-6 rounded-full transition-colors ${isActive ? 'bg-[#00FF66]' : 'bg-[#2A2A2A]'
-                      }`}
-                  >
-                    <div
-                      className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${isActive ? 'translate-x-7' : 'translate-x-1'
-                        }`}
-                    />
-                    {isActive && (
-                      <svg className="absolute left-2 top-1.5 w-3 h-3 text-[#0F0F0F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
                 </div>
               </div>
 
@@ -141,7 +250,7 @@ export function NewUserModal({ onClose }: NewUserModalProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-400 text-sm font-medium mb-1">Email</label>
+                  <label className="block text-gray-400 text-sm font-medium mb-1">Email <span className="text-red-500">*</span></label>
                   <input
                     type="email"
                     value={formData.email}
@@ -150,43 +259,95 @@ export function NewUserModal({ onClose }: NewUserModalProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-400 text-sm font-medium mb-1">Username</label>
-                  <input
-                    type="text"
-                    value={formData.username}
-                    onChange={(e) => handleChange('username', e.target.value)}
-                    className="w-full bg-[#1A1A1A] border border-[#333] rounded-sm px-3 py-2 text-white focus:outline-none focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66] transition-all"
-                  />
-                </div>
-                <div>
                   <label className="block text-gray-400 text-sm font-medium mb-1">Phone number</label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleChange('phone', e.target.value)}
-                    className="w-full bg-[#1A1A1A] border border-[#333] rounded-sm px-3 py-2 text-white focus:outline-none focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66] transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-400 text-sm font-medium mb-1">Manager</label>
-                  <select
-                    value={formData.manager}
-                    onChange={(e) => handleChange('manager', e.target.value)}
-                    className="w-full bg-[#1A1A1A] border border-[#333] rounded-sm px-3 py-2 text-gray-400 focus:outline-none focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66] transition-all appearance-none"
-                  >
-                    <option value="">Choose a manager</option>
-                    <option value="david">David Paul</option>
-                    <option value="alexa">Alexa CSM</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-gray-400 text-sm font-medium mb-1">Company</label>
-                  <input
-                    type="text"
-                    value={formData.company}
-                    onChange={(e) => handleChange('company', e.target.value)}
-                    className="w-full bg-[#1A1A1A] border border-[#333] rounded-sm px-3 py-2 text-white focus:outline-none focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66] transition-all"
-                  />
+                  <div className="flex gap-2">
+                    {/* Custom Country Code Dropdown */}
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                        className="w-[70px] h-[38px] bg-[#1A1A1A] border border-[#333] rounded-sm px-2 py-2 text-white focus:outline-none focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66] transition-all cursor-pointer flex items-center justify-between gap-1"
+                      >
+                        <span className="text-sm">{selectedCountry.code}</span>
+                        <svg className={`w-3 h-3 text-gray-400 transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      
+                      {/* Dropdown Panel */}
+                      {showCountryDropdown && (
+                        <div 
+                          className="absolute top-full left-0 mt-1 w-[180px] bg-[#1A1A1A] border border-[#333] rounded-lg shadow-2xl z-50 overflow-hidden"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Backspace') {
+                              setCountrySearch(prev => prev.slice(0, -1));
+                            } else if (e.key === 'Escape') {
+                              setShowCountryDropdown(false);
+                              setCountrySearch('');
+                            } else if (e.key === 'Enter') {
+                              e.preventDefault();
+                              // Auto-select first matching country on Enter
+                              if (filteredCountries.length > 0) {
+                                handleChange('countryCode', filteredCountries[0].code);
+                                handleChange('phone', '');
+                                setShowCountryDropdown(false);
+                                setCountrySearch('');
+                              }
+                            } else if (e.key.length === 1 && e.key.match(/[a-zA-Z0-9\s+]/)) {
+                              setCountrySearch(prev => prev + e.key);
+                            }
+                          }}
+                          tabIndex={0}
+                          ref={(el) => el?.focus()}
+                        >
+                          {/* Hidden search indicator */}
+                          {countrySearch && (
+                            <div className="px-3 py-2 border-b border-[#333] text-xs text-[#00FF66]">
+                              Searching: "{countrySearch}"
+                            </div>
+                          )}
+                          {/* Country List */}
+                          <div className="max-h-[250px] overflow-y-auto">
+                            {filteredCountries.map((country, idx) => (
+                              <button
+                                key={`${country.code}-${idx}`}
+                                type="button"
+                                onClick={() => {
+                                  handleChange('countryCode', country.code);
+                                  handleChange('phone', ''); // Clear phone when country changes
+                                  setShowCountryDropdown(false);
+                                  setCountrySearch('');
+                                }}
+                                className={`w-full px-3 py-2 text-left text-sm hover:bg-[#00FF66]/10 transition-colors ${
+                                  formData.countryCode === country.code ? 'bg-[#00FF66]/20 text-[#00FF66]' : 'text-white'
+                                }`}
+                              >
+                                {country.country}
+                              </button>
+                            ))}
+                            {filteredCountries.length === 0 && (
+                              <div className="px-3 py-4 text-center text-gray-500 text-sm">No countries found</div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <input
+                      type="tel"
+                      placeholder={`${selectedCountry.digits} digits`}
+                      value={formData.phone}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, ''); // Only allow digits
+                        if (value.length <= selectedCountry.digits) {
+                          handleChange('phone', value);
+                        }
+                      }}
+                      maxLength={selectedCountry.digits}
+                      className="w-[120px] bg-[#1A1A1A] border border-[#333] rounded-sm px-3 py-2 text-white focus:outline-none focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66] transition-all placeholder-gray-600"
+                      onClick={() => { setShowCountryDropdown(false); setCountrySearch(''); }}
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-gray-400 text-sm font-medium mb-1">Department</label>
@@ -198,11 +359,11 @@ export function NewUserModal({ onClose }: NewUserModalProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-400 text-sm font-medium mb-1">Title</label>
+                  <label className="block text-gray-400 text-sm font-medium mb-1">Designation</label>
                   <input
                     type="text"
-                    value={formData.title}
-                    onChange={(e) => handleChange('title', e.target.value)}
+                    value={formData.designation}
+                    onChange={(e) => handleChange('designation', e.target.value)}
                     className="w-full bg-[#1A1A1A] border border-[#333] rounded-sm px-3 py-2 text-white focus:outline-none focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66] transition-all"
                   />
                 </div>
@@ -224,29 +385,45 @@ export function NewUserModal({ onClose }: NewUserModalProps) {
                 <div className="grid grid-cols-3 gap-x-10 gap-y-8">
                   {customFields.map((field) => (
                     <div key={field.id} className="relative group">
-                      <label className="block text-gray-400 text-sm font-medium mb-1">
-                        {field.label || 'Custom Field'}
-                      </label>
-                      <div className="relative">
+                      {/* Editable Label */}
+                      <div className="flex items-center gap-2 mb-1">
                         <input
                           type="text"
-                          value={field.value}
-                          onChange={(e) => updateCustomField(field.id, 'value', e.target.value)}
-                          placeholder={field.label || 'Enter value'}
-                          className="w-full bg-[#1A1A1A] border border-[#333] rounded-sm px-3 py-2 pr-8 text-[#D5FFD6] focus:outline-none focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66] transition-all placeholder-gray-600"
+                          defaultValue={field.label}
+                          onBlur={(e) => {
+                            if (e.target.value !== field.label) {
+                              confirmLabelChange(field.id, e.target.value);
+                            }
+                          }}
+                          placeholder="Field name"
+                          className="bg-transparent text-gray-400 text-sm font-medium focus:outline-none focus:text-[#00FF66] border-b border-transparent focus:border-[#00FF66] transition-all placeholder-gray-600 w-full"
                         />
-                        {/* Delete button - appears on hover in top right corner of input */}
+                        {/* Delete button */}
                         <button
                           type="button"
-                          onClick={() => removeCustomField(field.id)}
-                          className="absolute top-1/2 right-2 -translate-y-1/2 w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                          onClick={() => requestDeleteField(field.id)}
+                          className="w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                           title="Delete field"
                         >
-                          <svg className="w-3 h-3 text-[#00FF66]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <svg className="w-3 h-3 text-red-500 hover:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
                       </div>
+                      {/* Value Input */}
+                      <input
+                        type="text"
+                        value={field.value}
+                        onChange={(e) => updateCustomField(field.id, 'value', e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            (e.target as HTMLInputElement).blur();
+                          }
+                        }}
+                        placeholder={field.label ? `Enter ${field.label.toLowerCase()}` : 'Enter value'}
+                        className="w-full bg-[#1A1A1A] border border-[#333] rounded-sm px-3 py-2 text-[#D5FFD6] focus:outline-none focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66] transition-all placeholder-gray-600"
+                      />
                     </div>
                   ))}
                 </div>
@@ -255,6 +432,60 @@ export function NewUserModal({ onClose }: NewUserModalProps) {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      {confirmDialog.show && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70">
+          <div className="bg-[#1A1A1A] rounded-lg p-6 max-w-sm w-full mx-4 border border-[#333] shadow-2xl">
+            <div className="text-center">
+              {/* Icon */}
+              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-[#FF4444]/20 flex items-center justify-center">
+                <svg className="w-6 h-6 text-[#FF4444]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              
+              {/* Title */}
+              <h3 className="text-lg font-semibold text-white mb-2">
+                {confirmDialog.type === 'delete' ? 'Delete Field?' : 'Modify Field?'}
+              </h3>
+              
+              {/* Message */}
+              <p className="text-gray-400 text-sm mb-4">
+                {confirmDialog.type === 'delete' 
+                  ? `Are you sure you want to delete "${confirmDialog.fieldLabel}"?`
+                  : `Are you sure you want to modify "${confirmDialog.fieldLabel}"?`
+                }
+              </p>
+
+              <p className="text-gray-500 text-xs mb-6">Press Enter to confirm, Escape to cancel</p>
+              
+              {/* Buttons */}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleCancelAction}
+                  className="flex-1 px-4 py-2 rounded-lg bg-[#2A2A2A] text-gray-300 hover:bg-[#333] transition-colors font-medium text-sm"
+                >
+                  Cancel (Esc)
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmAction}
+                  autoFocus
+                  className={`flex-1 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                    confirmDialog.type === 'delete'
+                      ? 'bg-[#FF4444] text-white hover:bg-[#FF5555]'
+                      : 'bg-[#00FF66] text-[#0F0F0F] hover:bg-[#00CC52]'
+                  }`}
+                >
+                  {confirmDialog.type === 'delete' ? 'Delete (Enter)' : 'Modify (Enter)'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

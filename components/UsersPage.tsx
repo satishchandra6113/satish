@@ -46,11 +46,7 @@ const mockUsers: User[] = [
   }
 ];
 
-interface UsersPageProps {
-  onNewUser: () => void;
-}
-
-export function UsersPage({ onNewUser }: UsersPageProps) {
+export function UsersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [users] = useState<User[]>(mockUsers);
   const [showImportModal, setShowImportModal] = useState(false);
