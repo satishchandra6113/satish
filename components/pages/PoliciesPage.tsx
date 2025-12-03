@@ -1,4 +1,5 @@
-import { FileCheck, Shield, Lock, Eye, Users, Clock, CheckCircle, XCircle, AlertTriangle, Search, Filter, Plus, MoreVertical } from 'lucide-react';
+import { useState } from 'react';
+import { FileCheck, Shield, Lock, Eye, Users, Clock, CheckCircle, XCircle, AlertTriangle, Search, Filter, Plus, MoreVertical, X } from 'lucide-react';
 
 const THEME = {
   primary: '#00FF66',
@@ -75,12 +76,43 @@ const getStatusColor = (status: string) => {
 };
 
 export function PoliciesPage() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [filterType, setFilterType] = useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = useState<string | null>(null);
+
+  // Filter policies based on search and filters
+  const filteredPolicies = policies.filter(policy => {
+    // Search filter
+    const matchesSearch = searchQuery === '' || 
+      policy.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      policy.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      policy.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      policy.createdBy.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Type filter
+    const matchesType = filterType === null || policy.type === filterType;
+    
+    // Status filter
+    const matchesStatus = filterStatus === null || policy.status === filterStatus;
+    
+    return matchesSearch && matchesType && matchesStatus;
+  });
+
   const stats = {
     total: policies.length,
     active: policies.filter(p => p.status === 'active').length,
     inactive: policies.filter(p => p.status === 'inactive').length,
     draft: policies.filter(p => p.status === 'draft').length,
   };
+
+  const clearFilters = () => {
+    setFilterType(null);
+    setFilterStatus(null);
+    setSearchQuery('');
+  };
+
+  const hasActiveFilters = filterType !== null || filterStatus !== null || searchQuery !== '';
 
   return (
     <div className="p-6 space-y-6">
@@ -130,23 +162,197 @@ export function PoliciesPage() {
           <Search size={18} style={{ color: THEME.textMuted }} />
           <input
             type="text"
-            placeholder="Search policies..."
+            placeholder="Search policies by name, description, type..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1 bg-transparent outline-none text-sm"
             style={{ color: THEME.textPrimary }}
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="p-1 rounded-full hover:bg-[rgba(255,255,255,0.1)] transition-colors"
+              style={{ color: THEME.textMuted }}
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
-        <button
-          className="flex items-center gap-2 px-4 py-3 rounded-xl transition-all hover:bg-opacity-80"
-          style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}`, color: THEME.textMuted }}
-        >
-          <Filter size={18} />
-          <span className="text-sm">Filter</span>
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setShowFilterMenu(!showFilterMenu)}
+            className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all hover:bg-opacity-80 ${
+              (filterType || filterStatus) ? 'border-[#00FF66]' : ''
+            }`}
+            style={{ 
+              background: THEME.bgCard, 
+              border: `1px solid ${(filterType || filterStatus) ? THEME.primary : THEME.border}`, 
+              color: (filterType || filterStatus) ? THEME.primary : THEME.textMuted 
+            }}
+          >
+            <Filter size={18} />
+            <span className="text-sm">Filter</span>
+            {(filterType || filterStatus) && (
+              <span 
+                className="w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center"
+                style={{ background: THEME.primary, color: THEME.bgDark }}
+              >
+                {(filterType ? 1 : 0) + (filterStatus ? 1 : 0)}
+              </span>
+            )}
+          </button>
+
+          {/* Filter Dropdown Menu */}
+          {showFilterMenu && (
+            <div
+              className="absolute right-0 top-full mt-2 w-[280px] rounded-xl shadow-2xl z-50 overflow-hidden"
+              style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}` }}
+            >
+              {/* Filter Header */}
+              <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${THEME.border}` }}>
+                <span className="text-sm font-medium" style={{ color: THEME.textPrimary }}>Filters</span>
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearFilters}
+                    className="text-xs font-medium hover:underline"
+                    style={{ color: THEME.primary }}
+                  >
+                    Clear all
+                  </button>
+                )}
+              </div>
+
+              {/* Filter by Type */}
+              <div className="px-4 py-3" style={{ borderBottom: `1px solid ${THEME.border}` }}>
+                <p className="text-xs font-medium uppercase tracking-wider mb-3" style={{ color: THEME.textMuted }}>Policy Type</p>
+                <div className="flex flex-wrap gap-2">
+                  {['security', 'access', 'compliance', 'privacy'].map((type) => {
+                    const color = getTypeColor(type);
+                    const isSelected = filterType === type;
+                    return (
+                      <button
+                        key={type}
+                        onClick={() => setFilterType(isSelected ? null : type)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all"
+                        style={{ 
+                          background: isSelected ? `${color}20` : 'rgba(255,255,255,0.05)',
+                          border: `1px solid ${isSelected ? color : THEME.border}`,
+                          color: isSelected ? color : THEME.textMuted
+                        }}
+                      >
+                        {type}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Filter by Status */}
+              <div className="px-4 py-3">
+                <p className="text-xs font-medium uppercase tracking-wider mb-3" style={{ color: THEME.textMuted }}>Status</p>
+                <div className="flex flex-wrap gap-2">
+                  {['active', 'inactive', 'draft'].map((status) => {
+                    const color = getStatusColor(status);
+                    const isSelected = filterStatus === status;
+                    return (
+                      <button
+                        key={status}
+                        onClick={() => setFilterStatus(isSelected ? null : status)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all"
+                        style={{ 
+                          background: isSelected ? `${color}20` : 'rgba(255,255,255,0.05)',
+                          border: `1px solid ${isSelected ? color : THEME.border}`,
+                          color: isSelected ? color : THEME.textMuted
+                        }}
+                      >
+                        {status}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Apply Button */}
+              <div className="px-4 py-3" style={{ borderTop: `1px solid ${THEME.border}` }}>
+                <button
+                  onClick={() => setShowFilterMenu(false)}
+                  className="w-full py-2 rounded-lg text-sm font-medium transition-all hover:opacity-90"
+                  style={{ background: THEME.primary, color: THEME.bgDark }}
+                >
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Active Filters Display */}
+      {hasActiveFilters && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs" style={{ color: THEME.textMuted }}>Active filters:</span>
+          {searchQuery && (
+            <span 
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs"
+              style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
+            >
+              Search: "{searchQuery.length > 15 ? searchQuery.slice(0, 15) + '...' : searchQuery}"
+              <button onClick={() => setSearchQuery('')} className="hover:text-[#FF4444]"><X size={12} /></button>
+            </span>
+          )}
+          {filterType && (
+            <span 
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs capitalize"
+              style={{ background: `${getTypeColor(filterType)}15`, border: `1px solid ${getTypeColor(filterType)}30`, color: getTypeColor(filterType) }}
+            >
+              Type: {filterType}
+              <button onClick={() => setFilterType(null)} className="hover:text-[#FF4444]"><X size={12} /></button>
+            </span>
+          )}
+          {filterStatus && (
+            <span 
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs capitalize"
+              style={{ background: `${getStatusColor(filterStatus)}15`, border: `1px solid ${getStatusColor(filterStatus)}30`, color: getStatusColor(filterStatus) }}
+            >
+              Status: {filterStatus}
+              <button onClick={() => setFilterStatus(null)} className="hover:text-[#FF4444]"><X size={12} /></button>
+            </span>
+          )}
+          <button
+            onClick={clearFilters}
+            className="text-xs font-medium hover:underline"
+            style={{ color: THEME.danger }}
+          >
+            Clear all
+          </button>
+        </div>
+      )}
+
+      {/* Results Count */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm" style={{ color: THEME.textMuted }}>
+          Showing <span style={{ color: THEME.textPrimary }}>{filteredPolicies.length}</span> of {policies.length} policies
+        </p>
       </div>
 
       {/* Policies Grid */}
       <div className="grid grid-cols-2 gap-4">
-        {policies.map((policy) => {
+        {filteredPolicies.length === 0 ? (
+          <div className="col-span-2 py-16 text-center rounded-xl" style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}` }}>
+            <Search size={48} className="mx-auto mb-4" style={{ color: THEME.border }} />
+            <p className="text-lg font-medium mb-2" style={{ color: THEME.textPrimary }}>No policies found</p>
+            <p className="text-sm mb-4" style={{ color: THEME.textMuted }}>
+              Try adjusting your search or filter criteria
+            </p>
+            <button
+              onClick={clearFilters}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:opacity-90"
+              style={{ background: THEME.primary, color: THEME.bgDark }}
+            >
+              Clear Filters
+            </button>
+          </div>
+        ) : filteredPolicies.map((policy) => {
           const TypeIcon = getTypeIcon(policy.type);
           const StatusIcon = getStatusIcon(policy.status);
           const typeColor = getTypeColor(policy.type);
@@ -217,5 +423,6 @@ export function PoliciesPage() {
     </div>
   );
 }
+
 
 

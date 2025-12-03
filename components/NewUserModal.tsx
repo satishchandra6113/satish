@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './Button';
+import { User } from '../types/user';
 
 // Country codes list with phone number length
 const COUNTRY_CODES = [
@@ -60,9 +61,10 @@ const COUNTRY_CODES = [
 
 interface NewUserModalProps {
   onClose: () => void;
+  onCreateUser: (user: User) => void;
 }
 
-export function NewUserModal({ onClose }: NewUserModalProps) {
+export function NewUserModal({ onClose, onCreateUser }: NewUserModalProps) {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -70,8 +72,10 @@ export function NewUserModal({ onClose }: NewUserModalProps) {
     countryCode: '+1',
     phone: '',
     department: '',
-    designation: ''
+    designation: '',
+    role: ''
   });
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [customFields, setCustomFields] = useState([
     { id: 1, label: 'Custom Role', value: '' },
     { id: 2, label: 'Country Code', value: '' },
@@ -97,9 +101,43 @@ export function NewUserModal({ onClose }: NewUserModalProps) {
       )
     : COUNTRY_CODES;
 
+  const validateForm = (): boolean => {
+    const newErrors: { [key: string]: string } = {};
+    
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    }
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Creating user:', formData);
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    const newUser: User = {
+      id: crypto.randomUUID(),
+      name: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
+      email: formData.email.trim(),
+      roles: formData.role.trim() ? [formData.role.trim()] : ['User'],
+      status: 'Pending',
+      lastLogin: 'Never logged in',
+      avatar: null
+    };
+
+    onCreateUser(newUser);
     onClose();
   };
 
@@ -235,9 +273,15 @@ export function NewUserModal({ onClose }: NewUserModalProps) {
                     type="text"
                     placeholder="Required"
                     value={formData.firstName}
-                    onChange={(e) => handleChange('firstName', e.target.value)}
-                    className="w-full bg-[#1A1A1A] border border-[#333] rounded-sm px-3 py-2 text-white focus:outline-none focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66] transition-all placeholder-gray-600"
+                    onChange={(e) => {
+                      handleChange('firstName', e.target.value);
+                      if (errors.firstName) setErrors(prev => ({ ...prev, firstName: '' }));
+                    }}
+                    className={`w-full bg-[#1A1A1A] border rounded-sm px-3 py-2 text-white focus:outline-none transition-all placeholder-gray-600 ${
+                      errors.firstName ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-[#333] focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66]'
+                    }`}
                   />
+                  {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
                 </div>
                 <div>
                   <label className="block text-gray-400 text-sm font-medium mb-1">Last name <span className="text-red-500">*</span></label>
@@ -245,18 +289,31 @@ export function NewUserModal({ onClose }: NewUserModalProps) {
                     type="text"
                     placeholder="Required"
                     value={formData.lastName}
-                    onChange={(e) => handleChange('lastName', e.target.value)}
-                    className="w-full bg-[#1A1A1A] border border-[#333] rounded-sm px-3 py-2 text-white focus:outline-none focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66] transition-all placeholder-gray-600"
+                    onChange={(e) => {
+                      handleChange('lastName', e.target.value);
+                      if (errors.lastName) setErrors(prev => ({ ...prev, lastName: '' }));
+                    }}
+                    className={`w-full bg-[#1A1A1A] border rounded-sm px-3 py-2 text-white focus:outline-none transition-all placeholder-gray-600 ${
+                      errors.lastName ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-[#333] focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66]'
+                    }`}
                   />
+                  {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
                 </div>
                 <div>
                   <label className="block text-gray-400 text-sm font-medium mb-1">Email <span className="text-red-500">*</span></label>
                   <input
                     type="email"
+                    placeholder="user@example.com"
                     value={formData.email}
-                    onChange={(e) => handleChange('email', e.target.value)}
-                    className="w-full bg-[#1A1A1A] border border-[#333] rounded-sm px-3 py-2 text-white focus:outline-none focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66] transition-all"
+                    onChange={(e) => {
+                      handleChange('email', e.target.value);
+                      if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
+                    }}
+                    className={`w-full bg-[#1A1A1A] border rounded-sm px-3 py-2 text-white focus:outline-none transition-all placeholder-gray-600 ${
+                      errors.email ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-[#333] focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66]'
+                    }`}
                   />
+                  {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                 </div>
                 <div>
                   <label className="block text-gray-400 text-sm font-medium mb-1">Phone number</label>
@@ -359,13 +416,19 @@ export function NewUserModal({ onClose }: NewUserModalProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-400 text-sm font-medium mb-1">Designation</label>
-                  <input
-                    type="text"
-                    value={formData.designation}
-                    onChange={(e) => handleChange('designation', e.target.value)}
+                  <label className="block text-gray-400 text-sm font-medium mb-1">Role</label>
+                  <select
+                    value={formData.role}
+                    onChange={(e) => handleChange('role', e.target.value)}
                     className="w-full bg-[#1A1A1A] border border-[#333] rounded-sm px-3 py-2 text-white focus:outline-none focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66] transition-all"
-                  />
+                  >
+                    <option value="">Select role</option>
+                    <option value="Admin">Admin</option>
+                    <option value="User">User</option>
+                    <option value="Sales">Sales</option>
+                    <option value="Engineers">Engineers</option>
+                    <option value="Customer Success">Customer Success</option>
+                  </select>
                 </div>
               </div>
 

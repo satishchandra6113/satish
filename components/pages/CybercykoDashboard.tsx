@@ -12,7 +12,11 @@ import { EnhancedDeviceHealthChart } from '../charts/EnhancedDeviceHealthChart';
 import { EnhancedDeviceComplianceChart } from '../charts/EnhancedDeviceComplianceChart';
 import { BubbleMap } from '../charts/BubbleMap';
 
-export function CybercykoDashboard() {
+interface CybercykoDashboardProps {
+  onNavigate?: (page: string) => void;
+}
+
+export function CybercykoDashboard({ onNavigate }: CybercykoDashboardProps) {
   // Total Users Data
   const totalUsersData = {
     total: 2543,
@@ -122,9 +126,12 @@ export function CybercykoDashboard() {
       {/* Top Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[16px] mb-[24px]">
         {/* Total Users */}
-        <div className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10">
+        <div 
+          onClick={() => onNavigate?.('users')}
+          className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10 cursor-pointer group"
+        >
           <div className="flex items-center justify-between mb-[12px]">
-            <div className="p-[10px] rounded-[10px] bg-[rgba(0,255,102,0.1)] border border-[#00FF66]">
+            <div className="p-[10px] rounded-[10px] bg-[rgba(0,255,102,0.1)] border border-[#00FF66] group-hover:scale-110 transition-transform">
               <Users size={20} className="text-[#00FF66]" />
             </div>
             <span className="text-[12px] text-[#00FF66] font-medium">{totalUsersData.growth}</span>
@@ -138,9 +145,12 @@ export function CybercykoDashboard() {
         </div>
 
         {/* Total Devices */}
-        <div className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10">
+        <div 
+          onClick={() => onNavigate?.('devices')}
+          className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10 cursor-pointer group"
+        >
           <div className="flex items-center justify-between mb-[12px]">
-            <div className="p-[10px] rounded-[10px] bg-[rgba(0,255,102,0.1)] border border-[#00FF66]">
+            <div className="p-[10px] rounded-[10px] bg-[rgba(0,255,102,0.1)] border border-[#00FF66] group-hover:scale-110 transition-transform">
               <Monitor size={20} className="text-[#00FF66]" />
             </div>
             <span className="text-[12px] text-[#00FF66] font-medium">+8%</span>
@@ -152,9 +162,12 @@ export function CybercykoDashboard() {
         </div>
 
         {/* Total Policies */}
-        <div className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10">
+        <div 
+          onClick={() => onNavigate?.('policies')}
+          className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10 cursor-pointer group"
+        >
           <div className="flex items-center justify-between mb-[12px]">
-            <div className="p-[10px] rounded-[10px] bg-[rgba(0,255,102,0.1)] border border-[#00FF66]">
+            <div className="p-[10px] rounded-[10px] bg-[rgba(0,255,102,0.1)] border border-[#00FF66] group-hover:scale-110 transition-transform">
               <Shield size={20} className="text-[#00FF66]" />
             </div>
             <span className="text-[12px] text-[#00FF66] font-medium">{policiesData.percentage}%</span>
@@ -168,9 +181,12 @@ export function CybercykoDashboard() {
         </div>
 
         {/* Threat Detection */}
-        <div className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10">
+        <div 
+          onClick={() => onNavigate?.('threats')}
+          className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] hover:border-[#FF4444] transition-all duration-300 hover:shadow-lg hover:shadow-[#FF4444]/10 cursor-pointer group"
+        >
           <div className="flex items-center justify-between mb-[12px]">
-            <div className="p-[10px] rounded-[10px] bg-[rgba(255,68,68,0.1)] border border-[#FF4444]">
+            <div className="p-[10px] rounded-[10px] bg-[rgba(255,68,68,0.1)] border border-[#FF4444] group-hover:scale-110 transition-transform">
               <AlertTriangle size={20} className="text-[#FF4444]" />
             </div>
             <span className="text-[12px] text-[#00FF66] font-medium">{threatDetectionData.percentage}%</span>

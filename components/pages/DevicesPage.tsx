@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Monitor, Laptop, Smartphone, Tablet, Wifi, WifiOff, MapPin, Search, Filter, MoreVertical, ChevronUp, ChevronDown } from 'lucide-react';
+import { Monitor, Laptop, Smartphone, Tablet, Wifi, WifiOff, MapPin, Search, Filter, MoreVertical, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
 const THEME = {
   primary: '#00FF66',
@@ -72,11 +72,14 @@ const getStatusIcon = (status: string) => {
 type SortColumn = 'name' | 'status' | 'user' | 'location' | 'lastSeen' | null;
 type SortDirection = 'asc' | 'desc';
 
+const ITEMS_PER_PAGE_OPTIONS = [5, 10, 15, 20];
+
 export function DevicesPage() {
-  const [activeTab, setActiveTab] = useState<'all' | 'computers' | 'mobiles'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortColumn, setSortColumn] = useState<SortColumn>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   // Separate devices by category
   const computers = devices.filter(d => d.type === 'laptop' || d.type === 'desktop');
@@ -94,11 +97,9 @@ export function DevicesPage() {
     }
   };
 
-  // Get devices based on active tab, search, and sorting
+  // Get devices based on search and sorting
   const getFilteredDevices = () => {
     let filtered = devices;
-    if (activeTab === 'computers') filtered = computers;
-    if (activeTab === 'mobiles') filtered = mobiles;
     
     if (searchQuery) {
       filtered = filtered.filter(d => 
@@ -168,18 +169,29 @@ export function DevicesPage() {
 
   const filteredDevices = getFilteredDevices();
 
+  // Pagination calculations
+  const totalItems = filteredDevices.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+  const paginatedDevices = filteredDevices.slice(startIndex, endIndex);
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
+  };
+
+  const handleItemsPerPageChange = (value: number) => {
+    setItemsPerPage(value);
+    setCurrentPage(1);
+  };
+
   const stats = {
     total: devices.length,
     computers: computers.length,
     mobiles: mobiles.length,
     online: devices.filter(d => d.status === 'online').length,
   };
-
-  const tabs = [
-    { id: 'all', label: 'All Devices', count: stats.total },
-    { id: 'computers', label: 'Computers', count: stats.computers, icon: Monitor },
-    { id: 'mobiles', label: 'Mobiles', count: stats.mobiles, icon: Smartphone },
-  ];
 
   return (
     <div className="p-6 space-y-6">
@@ -219,38 +231,6 @@ export function DevicesPage() {
         ))}
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center gap-2">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as 'all' | 'computers' | 'mobiles')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              activeTab === tab.id 
-                ? 'text-[#050505]' 
-                : 'hover:bg-[rgba(255,255,255,0.05)]'
-            }`}
-            style={{ 
-              background: activeTab === tab.id ? THEME.primary : 'transparent',
-              border: `1px solid ${activeTab === tab.id ? THEME.primary : THEME.border}`,
-              color: activeTab === tab.id ? THEME.bgDark : THEME.textMuted,
-            }}
-          >
-            {tab.icon && <tab.icon size={16} />}
-            <span>{tab.label}</span>
-            <span 
-              className="px-2 py-0.5 rounded-full text-xs font-bold"
-              style={{ 
-                background: activeTab === tab.id ? 'rgba(0,0,0,0.2)' : THEME.border,
-                color: activeTab === tab.id ? THEME.bgDark : THEME.textMuted,
-              }}
-            >
-              {tab.count}
-            </span>
-          </button>
-        ))}
-      </div>
-
       {/* Search and Filter */}
       <div className="flex items-center gap-4">
         <div
@@ -260,9 +240,9 @@ export function DevicesPage() {
           <Search size={18} style={{ color: THEME.textMuted }} />
           <input
             type="text"
-            placeholder={`Search ${activeTab === 'computers' ? 'computers' : activeTab === 'mobiles' ? 'mobiles' : 'devices'}...`}
+            placeholder="Search devices..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="flex-1 bg-transparent outline-none text-sm"
             style={{ color: THEME.textPrimary }}
           />
@@ -314,8 +294,8 @@ export function DevicesPage() {
         </div>
 
         {/* Table Body */}
-        {filteredDevices.length > 0 ? (
-          filteredDevices.map((device, idx) => {
+        {paginatedDevices.length > 0 ? (
+          paginatedDevices.map((device, idx) => {
             const DeviceIcon = getDeviceIcon(device.type);
             const StatusIcon = getStatusIcon(device.status);
             const statusColor = getStatusColor(device.status);
@@ -324,7 +304,7 @@ export function DevicesPage() {
               <div
                 key={device.id}
                 className="grid grid-cols-[2fr,1fr,1fr,1.5fr,1fr,auto] gap-4 px-6 py-4 items-center hover:bg-[rgba(255,255,255,0.02)] transition-colors cursor-pointer"
-                style={{ borderBottom: idx < filteredDevices.length - 1 ? `1px solid ${THEME.border}` : 'none' }}
+                style={{ borderBottom: idx < paginatedDevices.length - 1 ? `1px solid ${THEME.border}` : 'none' }}
               >
                 {/* Device */}
                 <div className="flex items-center gap-3">
@@ -371,6 +351,142 @@ export function DevicesPage() {
         ) : (
           <div className="px-6 py-12 text-center">
             <p style={{ color: THEME.textMuted }}>No devices found</p>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {filteredDevices.length > 0 && (
+          <div
+            className="flex items-center justify-between px-6 py-4"
+            style={{ borderTop: `1px solid ${THEME.border}` }}
+          >
+            {/* Left side - Items per page */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs" style={{ color: THEME.textMuted }}>Show</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                className="px-2 py-1.5 rounded text-xs outline-none cursor-pointer appearance-none pr-6 bg-no-repeat"
+                style={{ 
+                  background: `${THEME.bgCard} url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238F8F8F' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 6px center`, 
+                  color: THEME.textPrimary,
+                  border: `1px solid ${THEME.border}`
+                }}
+              >
+                {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+              <span className="text-xs" style={{ color: THEME.textMuted }}>entries</span>
+            </div>
+
+            {/* Right side - Navigation */}
+            <div className="flex items-center">
+              {/* First & Previous */}
+              <button
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                className="w-8 h-8 flex items-center justify-center rounded-l border-r-0 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[rgba(0,255,102,0.1)]"
+                style={{ 
+                  border: `1px solid ${THEME.border}`,
+                  color: currentPage === 1 ? THEME.textMuted : THEME.textPrimary
+                }}
+                title="First"
+              >
+                <ChevronsLeft size={14} />
+              </button>
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="w-8 h-8 flex items-center justify-center border-r-0 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[rgba(0,255,102,0.1)]"
+                style={{ 
+                  border: `1px solid ${THEME.border}`,
+                  color: currentPage === 1 ? THEME.textMuted : THEME.textPrimary
+                }}
+                title="Previous"
+              >
+                <ChevronLeft size={14} />
+              </button>
+
+              {/* Page Numbers */}
+              {(() => {
+                const pages: (number | string)[] = [];
+                const showEllipsisStart = currentPage > 3;
+                const showEllipsisEnd = currentPage < totalPages - 2;
+
+                if (totalPages <= 5) {
+                  // Show all pages
+                  for (let i = 1; i <= totalPages; i++) pages.push(i);
+                } else {
+                  pages.push(1);
+                  if (showEllipsisStart) pages.push('...');
+                  
+                  const start = Math.max(2, currentPage - 1);
+                  const end = Math.min(totalPages - 1, currentPage + 1);
+                  for (let i = start; i <= end; i++) {
+                    if (!pages.includes(i)) pages.push(i);
+                  }
+                  
+                  if (showEllipsisEnd) pages.push('...');
+                  if (!pages.includes(totalPages)) pages.push(totalPages);
+                }
+
+                return pages.map((page, idx) => (
+                  page === '...' ? (
+                    <span
+                      key={`ellipsis-${idx}`}
+                      className="w-8 h-8 flex items-center justify-center text-xs border-r-0"
+                      style={{ 
+                        border: `1px solid ${THEME.border}`,
+                        color: THEME.textMuted,
+                        background: THEME.bgCard
+                      }}
+                    >
+                      •••
+                    </span>
+                  ) : (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page as number)}
+                      className="w-8 h-8 flex items-center justify-center text-xs font-medium border-r-0 transition-all hover:bg-[rgba(0,255,102,0.1)]"
+                      style={{ 
+                        border: `1px solid ${currentPage === page ? THEME.primary : THEME.border}`,
+                        background: currentPage === page ? `${THEME.primary}15` : 'transparent',
+                        color: currentPage === page ? THEME.primary : THEME.textMuted
+                      }}
+                    >
+                      {page}
+                    </button>
+                  )
+                ));
+              })()}
+
+              {/* Next & Last */}
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="w-8 h-8 flex items-center justify-center border-r-0 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[rgba(0,255,102,0.1)]"
+                style={{ 
+                  border: `1px solid ${THEME.border}`,
+                  color: currentPage === totalPages ? THEME.textMuted : THEME.textPrimary
+                }}
+                title="Next"
+              >
+                <ChevronRight size={14} />
+              </button>
+              <button
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+                className="w-8 h-8 flex items-center justify-center rounded-r transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[rgba(0,255,102,0.1)]"
+                style={{ 
+                  border: `1px solid ${THEME.border}`,
+                  color: currentPage === totalPages ? THEME.textMuted : THEME.textPrimary
+                }}
+                title="Last"
+              >
+                <ChevronsRight size={14} />
+              </button>
+            </div>
           </div>
         )}
       </div>

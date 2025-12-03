@@ -1,4 +1,4 @@
-import { Home, Users, CreditCard, Settings, Shield, Activity, Bell, LogOut, ChevronRight, Monitor, FileCheck } from 'lucide-react';
+import { Home, Users, CreditCard, Shield, Activity, ChevronRight, Monitor, FileCheck, AlertTriangle } from 'lucide-react';
 import CybercykoLogo from '../imports/CybercykoLogo1';
 
 interface SidebarProps {
@@ -16,14 +16,13 @@ const menuItems = [
   { id: 'users', label: 'Users', icon: Users },
   { id: 'devices', label: 'Devices', icon: Monitor, badge: TOTAL_DEVICES },
   { id: 'policies', label: 'Policies', icon: FileCheck },
+  { id: 'threats', label: 'Threats', icon: AlertTriangle },
   { id: 'billing', label: 'Billing', icon: CreditCard },
-  { id: 'profile', label: 'Profile', icon: Settings },
 ];
 
 const bottomItems = [
   { id: 'security', label: 'Security', icon: Shield },
   { id: 'activity', label: 'Activity', icon: Activity },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
 ];
 
 export function CybercykoSidebar({ currentPage, onNavigate }: SidebarProps) {
@@ -209,25 +208,6 @@ export function CybercykoSidebar({ currentPage, onNavigate }: SidebarProps) {
                 </button>
               );
             })}
-            
-            <div className="pt-[16px] border-t border-[#1A1A1A]">
-              <button 
-                onClick={() => console.log('Sign out clicked')}
-                className="menu-item w-full flex items-center gap-[12px] rounded-[12px] px-[18px] py-[12px] text-[#FF4444] hover:bg-[rgba(255,68,68,0.1)] transition-colors group relative"
-              >
-                <div className="flex-shrink-0 w-[20px] flex items-center justify-center">
-                  <LogOut size={20} />
-                </div>
-                <span className="sidebar-text text-[14px] font-medium">
-                  Sign Out
-                </span>
-                {/* Tooltip */}
-                <div className="tooltip absolute left-full ml-[12px] px-[8px] py-[4px] bg-[#1A1A1A] text-[#D5FFD6] text-[12px] rounded-[6px] whitespace-nowrap z-50 border border-[#2A2A2A]">
-                  Sign Out
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full w-0 h-0 border-t-[4px] border-t-transparent border-r-[4px] border-r-[#1A1A1A] border-b-[4px] border-b-transparent"></div>
-                </div>
-              </button>
-            </div>
           </div>
         </div>
       </div>
