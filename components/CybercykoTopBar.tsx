@@ -1,58 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Settings, User, LogOut, UserCircle, Shield, Key, HelpCircle, ChevronDown, Check, Trash2, AlertCircle, Info, CheckCircle, AlertTriangle, Moon, Sun, Globe, Smartphone, Monitor, Keyboard, Download, Activity, Lock, Eye, EyeOff, Copy, X, Zap, Clock, MapPin, Wifi, Home, CreditCard, FileCheck, Users, ArrowRight, History } from 'lucide-react';
-
-interface Notification {
-  id: number;
-  type: 'info' | 'success' | 'warning' | 'error';
-  title: string;
-  message: string;
-  time: string;
-  read: boolean;
-}
-
-interface SearchResult {
-  id: string;
-  title: string;
-  description: string;
-  category: 'page' | 'user' | 'device' | 'policy' | 'action';
-  icon: any;
-  path?: string;
-  action?: () => void;
-}
-
-// Search data
-const searchableItems: SearchResult[] = [
-  // Pages
-  { id: 'page-dashboard', title: 'Dashboard', description: 'Overview and statistics', category: 'page', icon: Home, path: 'dashboard' },
-  { id: 'page-users', title: 'Users', description: 'Manage user accounts', category: 'page', icon: Users, path: 'users' },
-  { id: 'page-devices', title: 'Devices', description: 'Device management', category: 'page', icon: Monitor, path: 'devices' },
-  { id: 'page-policies', title: 'Policies', description: 'Security policies', category: 'page', icon: FileCheck, path: 'policies' },
-  { id: 'page-threats', title: 'Threats', description: 'Threat detection', category: 'page', icon: AlertTriangle, path: 'threats' },
-  { id: 'page-billing', title: 'Billing', description: 'Insurance & billing', category: 'page', icon: CreditCard, path: 'billing' },
-  { id: 'page-security', title: 'Security Settings', description: 'Account security', category: 'page', icon: Shield, path: 'security' },
-  { id: 'page-activity', title: 'Activity Logs', description: 'System activity', category: 'page', icon: Activity, path: 'activity' },
-  // Users
-  { id: 'user-1', title: 'John Smith', description: 'john.smith@company.com • Admin', category: 'user', icon: User, path: 'users' },
-  { id: 'user-2', title: 'Sarah Johnson', description: 'sarah.j@company.com • Manager', category: 'user', icon: User, path: 'users' },
-  { id: 'user-3', title: 'Mike Wilson', description: 'mike.w@company.com • Developer', category: 'user', icon: User, path: 'users' },
-  { id: 'user-4', title: 'Emily Davis', description: 'emily.d@company.com • Designer', category: 'user', icon: User, path: 'users' },
-  { id: 'user-5', title: 'Alex Brown', description: 'alex.b@company.com • Analyst', category: 'user', icon: User, path: 'users' },
-  // Devices
-  { id: 'device-1', title: 'MacBook Pro - John', description: 'macOS • Active', category: 'device', icon: Monitor, path: 'devices' },
-  { id: 'device-2', title: 'iPhone 15 Pro', description: 'iOS 17 • Active', category: 'device', icon: Smartphone, path: 'devices' },
-  { id: 'device-3', title: 'Windows Desktop', description: 'Windows 11 • Inactive', category: 'device', icon: Monitor, path: 'devices' },
-  { id: 'device-4', title: 'Samsung Galaxy S24', description: 'Android 14 • Active', category: 'device', icon: Smartphone, path: 'devices' },
-  // Policies
-  { id: 'policy-1', title: 'Password Policy', description: 'Security • Active', category: 'policy', icon: Key, path: 'policies' },
-  { id: 'policy-2', title: 'Device Enrollment', description: 'Access • Active', category: 'policy', icon: FileCheck, path: 'policies' },
-  { id: 'policy-3', title: 'Data Protection', description: 'Compliance • Active', category: 'policy', icon: Shield, path: 'policies' },
-  // Actions
-  { id: 'action-1', title: 'Add New User', description: 'Create a new user account', category: 'action', icon: Users, path: 'users' },
-  { id: 'action-2', title: 'Add New Device', description: 'Register a new device', category: 'action', icon: Monitor, path: 'devices' },
-  { id: 'action-3', title: 'Create Policy', description: 'Create a new security policy', category: 'action', icon: FileCheck, path: 'policies' },
-  { id: 'action-4', title: 'Run Security Scan', description: 'Scan for threats', category: 'action', icon: Shield, path: 'threats' },
-  { id: 'action-5', title: 'Export Data', description: 'Download reports', category: 'action', icon: Download, path: 'activity' },
-];
+import { createPortal } from 'react-dom';
+import { Search, Bell, User, X, Clock, ArrowRight, History, Trash2, Home, Users, Monitor, Shield, Activity, CreditCard, FileText, Smartphone, AlertTriangle, ChevronDown, LogOut, UserCircle, Key, HelpCircle, Settings, Moon, Sun, Globe, Lock, Download, Zap, Wifi, MapPin, Check, ExternalLink } from 'lucide-react';
 
 interface TopBarProps {
   onMenuToggle?: () => void;
@@ -60,33 +8,95 @@ interface TopBarProps {
   onNavigate?: (page: string) => void;
 }
 
+interface SearchResult {
+  id: string;
+  title: string;
+  description: string;
+  category: 'page' | 'user' | 'device' | 'action';
+  icon: any;
+  path?: string;
+}
+
+// Searchable items data
+const searchableItems: SearchResult[] = [
+  // Pages
+  { id: 'page-dashboard', title: 'Dashboard', description: 'Overview and statistics', category: 'page', icon: Home, path: 'dashboard' },
+  { id: 'page-users', title: 'Users', description: 'Manage user accounts', category: 'page', icon: Users, path: 'users' },
+  { id: 'page-devices', title: 'Devices', description: 'Device management', category: 'page', icon: Monitor, path: 'devices' },
+  { id: 'page-policies', title: 'Policies', description: 'Security policies', category: 'page', icon: FileText, path: 'policies' },
+  { id: 'page-threats', title: 'Threats', description: 'Threat detection & alerts', category: 'page', icon: AlertTriangle, path: 'threats' },
+  { id: 'page-billing', title: 'Billing', description: 'Subscription & payments', category: 'page', icon: CreditCard, path: 'billing' },
+  { id: 'page-security', title: 'Security', description: 'Security settings', category: 'page', icon: Shield, path: 'security' },
+  { id: 'page-activity', title: 'Activity', description: 'System activity logs', category: 'page', icon: Activity, path: 'activity' },
+  // Users
+  { id: 'user-1', title: 'Alex Johnson', description: 'alex@company.com • Admin', category: 'user', icon: User, path: 'users' },
+  { id: 'user-2', title: 'Sarah Williams', description: 'sarah@company.com • Manager', category: 'user', icon: User, path: 'users' },
+  { id: 'user-3', title: 'Mike Chen', description: 'mike@company.com • Developer', category: 'user', icon: User, path: 'users' },
+  { id: 'user-4', title: 'Emma Davis', description: 'emma@company.com • Designer', category: 'user', icon: User, path: 'users' },
+  // Devices
+  { id: 'device-1', title: 'MacBook Pro - Alex', description: 'macOS 14.2 • Online', category: 'device', icon: Monitor, path: 'devices' },
+  { id: 'device-2', title: 'iPhone 15 Pro', description: 'iOS 17.2 • Online', category: 'device', icon: Smartphone, path: 'devices' },
+  { id: 'device-3', title: 'Windows Desktop', description: 'Windows 11 • Offline', category: 'device', icon: Monitor, path: 'devices' },
+  // Quick Actions
+  { id: 'action-1', title: 'Add New User', description: 'Create a new user account', category: 'action', icon: Users, path: 'users' },
+  { id: 'action-2', title: 'Add New Device', description: 'Register a new device', category: 'action', icon: Monitor, path: 'devices' },
+  { id: 'action-3', title: 'Run Security Scan', description: 'Scan for vulnerabilities', category: 'action', icon: Shield, path: 'threats' },
+  { id: 'action-4', title: 'View Reports', description: 'Generate system reports', category: 'action', icon: Activity, path: 'activity' },
+];
+
+const categoryLabels: Record<string, string> = {
+  page: 'Pages',
+  user: 'Users',
+  device: 'Devices',
+  action: 'Quick Actions',
+};
+
+const categoryColors: Record<string, string> = {
+  page: '#00FF66',
+  user: '#60A5FA',
+  device: '#A78BFA',
+  action: '#FFCC00',
+};
+
 export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [showAdminModal, setShowAdminModal] = useState(false);
-  const [adminModalTab, setAdminModalTab] = useState<'profile' | 'security' | 'sessions' | 'preferences' | 'help'>('profile');
-  
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [recentSearches, setRecentSearches] = useState<string[]>(['Dashboard', 'Users', 'Security']);
+  const [recentSearches, setRecentSearches] = useState<string[]>(['Dashboard', 'Users', 'Devices', 'Security']);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  
+
+  // Profile & Notifications state
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [adminModalTab, setAdminModalTab] = useState<'profile' | 'security' | 'sessions' | 'preferences'>('profile');
+  const profileRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
+
   // User preferences
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
   const [language, setLanguage] = useState('English');
 
-  // Open admin modal with specific tab
-  const openAdminModal = (tab: typeof adminModalTab = 'profile') => {
-    setAdminModalTab(tab);
-    setShowAdminModal(true);
-    setShowProfileMenu(false);
-  };
+  // Mock data
+  const [notifications] = useState([
+    { id: 1, type: 'success', title: 'Device Approved', message: 'MacBook Pro has been approved.', time: '2 min ago', read: false },
+    { id: 2, type: 'warning', title: 'Security Alert', message: 'Unusual login attempt detected.', time: '15 min ago', read: false },
+    { id: 3, type: 'info', title: 'New User', message: 'John Doe joined the organization.', time: '1 hour ago', read: true },
+  ]);
 
-  // Search functionality
+  const [sessions] = useState([
+    { id: 1, device: 'MacBook Pro', browser: 'Chrome', location: 'New York, USA', current: true, lastActive: 'Now' },
+    { id: 2, device: 'iPhone 15', browser: 'Safari', location: 'New York, USA', current: false, lastActive: '2 hours ago' },
+    { id: 3, device: 'Windows PC', browser: 'Firefox', location: 'Los Angeles, USA', current: false, lastActive: '1 day ago' },
+  ]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  // Filter search results
   const filteredResults = searchQuery.trim()
     ? searchableItems.filter(item =>
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -94,28 +104,18 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
       ).slice(0, 8)
     : [];
 
+  // Group results by category
   const groupedResults = filteredResults.reduce((acc, item) => {
     if (!acc[item.category]) acc[item.category] = [];
     acc[item.category].push(item);
     return acc;
   }, {} as Record<string, SearchResult[]>);
 
-  const categoryLabels: Record<string, string> = {
-    page: 'Pages',
-    user: 'Users',
-    device: 'Devices',
-    policy: 'Policies',
-    action: 'Quick Actions',
-  };
-
+  // Handle search selection
   const handleSearchSelect = (result: SearchResult) => {
-    if (result.path) {
-      onNavigate?.(result.path);
+    if (result.path && onNavigate) {
+      onNavigate(result.path);
     }
-    if (result.action) {
-      result.action();
-    }
-    // Add to recent searches
     setRecentSearches(prev => {
       const filtered = prev.filter(s => s !== result.title);
       return [result.title, ...filtered].slice(0, 5);
@@ -125,11 +125,19 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
     setShowHistory(false);
   };
 
+  // Handle recent search click
+  const handleRecentSearchClick = (search: string) => {
+    setSearchQuery(search);
+    setShowHistory(false);
+  };
+
+  // Clear search history
   const clearRecentSearches = () => {
     setRecentSearches([]);
     setShowHistory(false);
   };
 
+  // Keyboard navigation
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     const totalResults = filteredResults.length;
     if (e.key === 'ArrowDown') {
@@ -144,15 +152,17 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
     } else if (e.key === 'Escape') {
       setShowSearch(false);
       setSearchQuery('');
+      setShowHistory(false);
     }
   };
 
-  // Keyboard shortcut for search (Cmd/Ctrl + K)
+  // Keyboard shortcut (Cmd/Ctrl + K)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setShowSearch(true);
+        setShowHistory(false);
         setTimeout(() => searchInputRef.current?.focus(), 100);
       }
     };
@@ -160,11 +170,18 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Close search when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setShowSearch(false);
+        setShowHistory(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -175,98 +192,13 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
   useEffect(() => {
     setSelectedIndex(0);
   }, [searchQuery]);
-  
-  const [notifications, setNotifications] = useState<Notification[]>([
-    { id: 1, type: 'success', title: 'Device Approved', message: 'MacBook Pro has been approved and added to the system.', time: '2 min ago', read: false },
-    { id: 2, type: 'warning', title: 'Security Alert', message: 'Unusual login attempt detected from IP 192.168.1.45', time: '15 min ago', read: false },
-    { id: 3, type: 'info', title: 'New User Registered', message: 'John Doe has joined the organization.', time: '1 hour ago', read: false },
-    { id: 4, type: 'error', title: 'Compliance Issue', message: '3 devices are non-compliant with security policies.', time: '2 hours ago', read: true },
-    { id: 5, type: 'success', title: 'Backup Complete', message: 'System backup completed successfully.', time: '3 hours ago', read: true },
-  ]);
-  const profileMenuRef = useRef<HTMLDivElement>(null);
-  const notificationRef = useRef<HTMLDivElement>(null);
-  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
-
-  // Handle mouse enter - open immediately
-  const handleMouseEnter = () => {
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
-      closeTimeoutRef.current = null;
-    }
-    setShowProfileMenu(true);
+  // Open admin modal
+  const openAdminModal = (tab: typeof adminModalTab) => {
+    setAdminModalTab(tab);
+    setShowAdminModal(true);
+    setShowProfileMenu(false);
   };
-
-  // Handle mouse leave - close with small delay
-  const handleMouseLeave = () => {
-    closeTimeoutRef.current = setTimeout(() => {
-      setShowProfileMenu(false);
-    }, 150);
-  };
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (closeTimeoutRef.current) {
-        clearTimeout(closeTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Close notifications when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
-        setShowNotifications(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Notification functions
-  const markAsRead = (id: number) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-  };
-
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
-
-  const deleteNotification = (id: number) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  };
-
-  const clearAllNotifications = () => {
-    setNotifications([]);
-  };
-
-  const getNotificationIcon = (type: Notification['type']) => {
-    switch (type) {
-      case 'success': return <CheckCircle size={16} className="text-[#00FF66]" />;
-      case 'warning': return <AlertTriangle size={16} className="text-[#FFB800]" />;
-      case 'error': return <AlertCircle size={16} className="text-[#FF4444]" />;
-      default: return <Info size={16} className="text-[#60A5FA]" />;
-    }
-  };
-
-  const getNotificationBg = (type: Notification['type']) => {
-    switch (type) {
-      case 'success': return 'bg-[rgba(0,255,102,0.1)]';
-      case 'warning': return 'bg-[rgba(255,184,0,0.1)]';
-      case 'error': return 'bg-[rgba(255,68,68,0.1)]';
-      default: return 'bg-[rgba(96,165,250,0.1)]';
-    }
-  };
-
-  const profileMenuItems = [
-    { icon: UserCircle, label: 'My Profile', action: () => openAdminModal('profile') },
-    { icon: Shield, label: 'Security', action: () => openAdminModal('security') },
-    { icon: Smartphone, label: 'Sessions', action: () => openAdminModal('sessions'), badge: '3' },
-    { icon: Settings, label: 'Preferences', action: () => openAdminModal('preferences') },
-    { icon: HelpCircle, label: 'Help', action: () => openAdminModal('help') },
-  ];
 
   return (
     <div className="sticky top-0 z-30 bg-gradient-to-r from-[#0D0D0D]/95 to-[#050505]/95 backdrop-blur-[20px] border-b border-[#1A1A1A]">
@@ -283,9 +215,9 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
           {/* Search Bar with Dropdown */}
           <div className="relative" ref={searchRef}>
             <div 
-              className={`hidden md:flex items-center gap-[8px] rounded-[12px] px-[16px] py-[10px] min-w-[300px] cursor-text transition-all ${
+              className={`hidden md:flex items-center gap-[8px] rounded-[12px] px-[16px] py-[10px] min-w-[320px] cursor-text transition-all duration-300 ${
                 showSearch 
-                  ? 'bg-[rgba(0,255,102,0.05)] border border-[#00FF66]/50 shadow-[0_0_20px_rgba(0,255,102,0.1)]' 
+                  ? 'bg-[rgba(0,255,102,0.05)] border border-[#00FF66]/50 shadow-[0_0_20px_rgba(0,255,102,0.15)] min-w-[400px]' 
                   : 'bg-[rgba(255,255,255,0.05)] border border-[#1A1A1A] hover:border-[#2A2A2A]'
               }`}
               onClick={() => {
@@ -294,19 +226,26 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                 setTimeout(() => searchInputRef.current?.focus(), 50);
               }}
             >
-              <Search size={18} className={showSearch ? 'text-[#00FF66]' : 'text-[#8F8F8F]'} />
+              <Search size={18} className={`transition-colors ${showSearch ? 'text-[#00FF66]' : 'text-[#8F8F8F]'}`} />
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="Search..."
+                placeholder="Search pages, users, devices..."
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setShowHistory(false); }}
                 onFocus={() => { setShowSearch(true); setShowHistory(false); }}
                 onKeyDown={handleSearchKeyDown}
                 className="bg-transparent border-none outline-none text-[14px] text-[#D5FFD6] placeholder:text-[#8F8F8F] w-full"
               />
-              {/* History Icon Button */}
-              {recentSearches.length > 0 && (
+              {searchQuery && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setSearchQuery(''); }}
+                  className="p-[4px] rounded-[4px] text-[#5A5A5A] hover:bg-[#1A1A1A] hover:text-[#8F8F8F] transition-all"
+                >
+                  <X size={14} />
+                </button>
+              )}
+              {recentSearches.length > 0 && !searchQuery && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -323,52 +262,53 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                   <History size={14} />
                 </button>
               )}
-              <div className="flex items-center gap-[4px] text-[#5A5A5A] text-[11px]">
+              <div className="flex items-center gap-[4px] text-[#5A5A5A] text-[11px] ml-[8px]">
                 <kbd className="px-[6px] py-[2px] bg-[#1A1A1A] rounded-[4px] font-mono text-[10px]">⌘</kbd>
                 <kbd className="px-[6px] py-[2px] bg-[#1A1A1A] rounded-[4px] font-mono text-[10px]">K</kbd>
               </div>
             </div>
 
-            {/* Search Dropdown - Only shows when typing or viewing history */}
+            {/* Search Dropdown */}
             {showSearch && (searchQuery.trim() || showHistory) && (
               <div 
-                className="absolute right-0 top-full mt-[8px] w-[420px] bg-[#0F0F0F]/98 backdrop-blur-xl border border-[#1A1A1A] rounded-[16px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden"
+                className="absolute left-0 top-full mt-[8px] w-[420px] bg-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden z-50"
                 style={{ animation: 'fadeInDown 0.2s ease-out' }}
               >
-                {/* Search Results */}
                 {searchQuery.trim() ? (
                   filteredResults.length > 0 ? (
                     <div className="max-h-[400px] overflow-y-auto py-[8px]">
                       {Object.entries(groupedResults).map(([category, items]) => (
                         <div key={category}>
-                          <p className="px-[16px] py-[6px] text-[10px] font-semibold text-[#5A5A5A] uppercase tracking-wider">
-                            {categoryLabels[category] || category}
-                          </p>
-                          {items.map((result, idx) => {
+                          <div className="flex items-center gap-[8px] px-[16px] py-[8px]">
+                            <span className="w-[6px] h-[6px] rounded-full" style={{ backgroundColor: categoryColors[category] }} />
+                            <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: categoryColors[category] }}>
+                              {categoryLabels[category] || category}
+                            </p>
+                          </div>
+                          {items.map((result) => {
                             const globalIndex = filteredResults.findIndex(r => r.id === result.id);
                             const Icon = result.icon;
+                            const isSelected = selectedIndex === globalIndex;
                             return (
                               <button
                                 key={result.id}
                                 onClick={() => handleSearchSelect(result)}
-                                className={`w-full flex items-center gap-[12px] px-[16px] py-[10px] text-left transition-all ${
-                                  selectedIndex === globalIndex
-                                    ? 'bg-[rgba(0,255,102,0.1)] text-[#00FF66]'
-                                    : 'text-[#D5FFD6] hover:bg-[rgba(255,255,255,0.03)]'
+                                className={`w-full flex items-center gap-[12px] px-[16px] py-[12px] text-left transition-all ${
+                                  isSelected ? 'bg-[rgba(0,255,102,0.1)]' : 'hover:bg-[rgba(255,255,255,0.03)]'
                                 }`}
                               >
-                                <div className={`w-[36px] h-[36px] rounded-[10px] flex items-center justify-center flex-shrink-0 ${
-                                  selectedIndex === globalIndex ? 'bg-[rgba(0,255,102,0.15)]' : 'bg-[#1A1A1A]'
+                                <div className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center flex-shrink-0 transition-all ${
+                                  isSelected ? 'bg-[rgba(0,255,102,0.15)]' : 'bg-[#1A1A1A]'
                                 }`}>
-                                  <Icon size={16} className={selectedIndex === globalIndex ? 'text-[#00FF66]' : 'text-[#8F8F8F]'} />
+                                  <Icon size={18} className={isSelected ? 'text-[#00FF66]' : 'text-[#8F8F8F]'} />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-[13px] font-medium truncate">{result.title}</p>
-                                  <p className="text-[11px] text-[#5A5A5A] truncate">{result.description}</p>
+                                  <p className={`text-[14px] font-medium truncate ${isSelected ? 'text-[#00FF66]' : 'text-[#D5FFD6]'}`}>
+                                    {result.title}
+                                  </p>
+                                  <p className="text-[12px] text-[#5A5A5A] truncate">{result.description}</p>
                                 </div>
-                                {selectedIndex === globalIndex && (
-                                  <ArrowRight size={14} className="text-[#00FF66] flex-shrink-0" />
-                                )}
+                                {isSelected && <ArrowRight size={16} className="text-[#00FF66] flex-shrink-0" />}
                               </button>
                             );
                           })}
@@ -376,62 +316,57 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                       ))}
                     </div>
                   ) : (
-                    <div className="p-[32px] text-center">
-                      <Search size={40} className="mx-auto mb-[12px] text-[#2A2A2A]" />
-                      <p className="text-[14px] text-[#8F8F8F]">No results found</p>
-                      <p className="text-[12px] text-[#5A5A5A]">Try searching for pages, users, or devices</p>
+                    <div className="p-[40px] text-center">
+                      <Search size={48} className="mx-auto mb-[16px] text-[#2A2A2A]" />
+                      <p className="text-[15px] font-medium text-[#8F8F8F]">No results found</p>
+                      <p className="text-[13px] text-[#5A5A5A] mt-[4px]">Try searching for pages, users, or devices</p>
                     </div>
                   )
                 ) : showHistory && recentSearches.length > 0 ? (
-                  /* History View - Only shown when history icon is clicked */
                   <div className="py-[8px]">
-                    <div className="flex items-center justify-between px-[16px] py-[6px]">
+                    <div className="flex items-center justify-between px-[16px] py-[8px]">
                       <p className="text-[10px] font-semibold text-[#5A5A5A] uppercase tracking-wider flex items-center gap-[6px]">
-                        <History size={12} />
-                        Search History
+                        <Clock size={12} />
+                        Recent Searches
                       </p>
                       <button 
                         onClick={clearRecentSearches}
                         className="text-[10px] text-[#5A5A5A] hover:text-[#FF4444] transition-colors flex items-center gap-[4px]"
                       >
                         <Trash2 size={10} />
-                        Clear
+                        Clear All
                       </button>
                     </div>
                     {recentSearches.map((search, idx) => (
                       <button
                         key={idx}
-                        onClick={() => {
-                          setSearchQuery(search);
-                          setShowHistory(false);
-                        }}
-                        className="w-full flex items-center gap-[12px] px-[16px] py-[10px] text-left text-[#8F8F8F] hover:bg-[rgba(0,255,102,0.05)] hover:text-[#00FF66] transition-all group"
+                        onClick={() => handleRecentSearchClick(search)}
+                        className="w-full flex items-center gap-[12px] px-[16px] py-[12px] text-left text-[#8F8F8F] hover:bg-[rgba(0,255,102,0.05)] hover:text-[#00FF66] transition-all group"
                       >
-                        <div className="w-[32px] h-[32px] rounded-[8px] bg-[#1A1A1A] group-hover:bg-[rgba(0,255,102,0.1)] flex items-center justify-center transition-all">
+                        <div className="w-[36px] h-[36px] rounded-[10px] bg-[#1A1A1A] group-hover:bg-[rgba(0,255,102,0.1)] flex items-center justify-center transition-all">
                           <Clock size={14} className="group-hover:text-[#00FF66]" />
                         </div>
-                        <span className="text-[13px]">{search}</span>
-                        <ArrowRight size={12} className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <span className="text-[14px] flex-1">{search}</span>
+                        <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                       </button>
                     ))}
                   </div>
                 ) : null}
 
-                {/* Footer */}
-                <div className="px-[16px] py-[10px] border-t border-[#1A1A1A] bg-[rgba(0,0,0,0.3)]">
-                  <div className="flex items-center justify-between text-[10px] text-[#5A5A5A]">
-                    <div className="flex items-center gap-[12px]">
+                <div className="px-[16px] py-[12px] border-t border-[#1A1A1A] bg-[rgba(0,0,0,0.3)]">
+                  <div className="flex items-center justify-between text-[11px] text-[#5A5A5A]">
+                    <div className="flex items-center gap-[16px]">
                       <span className="flex items-center gap-[4px]">
-                        <kbd className="px-[4px] py-[1px] bg-[#1A1A1A] rounded text-[9px]">↑</kbd>
-                        <kbd className="px-[4px] py-[1px] bg-[#1A1A1A] rounded text-[9px]">↓</kbd>
+                        <kbd className="px-[5px] py-[2px] bg-[#1A1A1A] rounded text-[9px]">↑</kbd>
+                        <kbd className="px-[5px] py-[2px] bg-[#1A1A1A] rounded text-[9px]">↓</kbd>
                         Navigate
                       </span>
                       <span className="flex items-center gap-[4px]">
-                        <kbd className="px-[4px] py-[1px] bg-[#1A1A1A] rounded text-[9px]">↵</kbd>
+                        <kbd className="px-[5px] py-[2px] bg-[#1A1A1A] rounded text-[9px]">↵</kbd>
                         Select
                       </span>
                       <span className="flex items-center gap-[4px]">
-                        <kbd className="px-[6px] py-[1px] bg-[#1A1A1A] rounded text-[9px]">Esc</kbd>
+                        <kbd className="px-[8px] py-[2px] bg-[#1A1A1A] rounded text-[9px]">Esc</kbd>
                         Close
                       </span>
                     </div>
@@ -442,9 +377,14 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
           </div>
 
           {/* Notification Icon with Dropdown */}
-          <div className="relative" ref={notificationRef}>
+          <div 
+            className="relative" 
+            ref={notificationRef}
+            onMouseEnter={() => setShowNotifications(true)}
+            onMouseLeave={() => setShowNotifications(false)}
+          >
             <button 
-              onClick={() => setShowNotifications(!showNotifications)}
+              onClick={() => setShowNotifications(true)}
               className={`relative p-[10px] rounded-[10px] border transition-all ${
                 showNotifications 
                   ? 'bg-[rgba(0,255,102,0.1)] border-[#00FF66] text-[#00FF66]' 
@@ -454,301 +394,421 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
               <Bell size={20} />
               {unreadCount > 0 && (
                 <span className="absolute -top-[2px] -right-[2px] min-w-[18px] h-[18px] px-[4px] bg-[#FF4444] rounded-full border-2 border-[#0D0D0D] flex items-center justify-center text-[10px] font-bold text-white">
-                  {unreadCount > 9 ? '9+' : unreadCount}
+                  {unreadCount}
                 </span>
               )}
             </button>
 
-            {/* Notifications Dropdown */}
             {showNotifications && (
-              <div 
-                className="absolute right-0 top-full mt-[8px] w-[380px] bg-[#0F0F0F]/95 backdrop-blur-xl border border-[#1A1A1A] rounded-[16px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden"
-                style={{ animation: 'fadeInDown 0.2s ease-out' }}
-              >
-                {/* Header */}
-                <div className="p-[16px] border-b border-[#1A1A1A] bg-gradient-to-r from-[rgba(0,255,102,0.1)] to-transparent">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-[10px]">
-                      <Bell size={18} className="text-[#00FF66]" />
-                      <h3 className="text-[15px] font-semibold text-[#D5FFD6]">Notifications</h3>
+              <>
+                <div className="absolute right-0 top-full h-[8px] w-[300px]" />
+                <div 
+                  className="absolute right-0 top-full mt-[8px] w-[300px] bg-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden z-50"
+                  style={{ animation: 'fadeInDown 0.2s ease-out' }}
+                >
+                  <div className="p-[16px] border-b border-[#1A1A1A] bg-gradient-to-r from-[rgba(0,255,102,0.1)] to-transparent">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-[14px] font-semibold text-[#D5FFD6]">Notifications</h3>
                       {unreadCount > 0 && (
-                        <span className="px-[8px] py-[2px] bg-[#00FF66]/20 text-[#00FF66] text-[11px] font-semibold rounded-full">
+                        <span className="px-[8px] py-[2px] bg-[#00FF66]/20 text-[#00FF66] text-[10px] font-semibold rounded-full">
                           {unreadCount} new
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-[8px]">
-                      {unreadCount > 0 && (
-                        <button 
-                          onClick={markAllAsRead}
-                          className="p-[6px] rounded-[6px] text-[#8F8F8F] hover:bg-[rgba(0,255,102,0.1)] hover:text-[#00FF66] transition-all"
-                          title="Mark all as read"
-                        >
-                          <Check size={16} />
-                        </button>
-                      )}
-                      {notifications.length > 0 && (
-                        <button 
-                          onClick={clearAllNotifications}
-                          className="p-[6px] rounded-[6px] text-[#8F8F8F] hover:bg-[rgba(255,68,68,0.1)] hover:text-[#FF4444] transition-all"
-                          title="Clear all"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </div>
                   </div>
-                </div>
-
-                {/* Notifications List */}
-                <div className="max-h-[400px] overflow-y-auto">
-                  {notifications.length === 0 ? (
-                    <div className="p-[32px] text-center">
-                      <Bell size={40} className="mx-auto mb-[12px] text-[#2A2A2A]" />
-                      <p className="text-[14px] text-[#8F8F8F]">No notifications yet</p>
-                      <p className="text-[12px] text-[#5A5A5A]">We'll notify you when something arrives</p>
-                    </div>
-                  ) : (
-                    <div className="py-[8px]">
-                      {notifications.map((notification) => (
-                        <div
-                          key={notification.id}
-                          className={`group px-[16px] py-[12px] hover:bg-[rgba(255,255,255,0.02)] transition-all cursor-pointer border-l-2 ${
-                            notification.read ? 'border-transparent' : 'border-[#00FF66]'
-                          }`}
-                          onClick={() => markAsRead(notification.id)}
-                        >
-                          <div className="flex gap-[12px]">
-                            <div className={`w-[36px] h-[36px] rounded-[10px] ${getNotificationBg(notification.type)} flex items-center justify-center flex-shrink-0`}>
-                              {getNotificationIcon(notification.type)}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-[8px]">
-                                <p className={`text-[13px] font-medium ${notification.read ? 'text-[#8F8F8F]' : 'text-[#D5FFD6]'}`}>
-                                  {notification.title}
-                                </p>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    deleteNotification(notification.id);
-                                  }}
-                                  className="opacity-0 group-hover:opacity-100 p-[4px] rounded-[4px] text-[#5A5A5A] hover:bg-[rgba(255,68,68,0.1)] hover:text-[#FF4444] transition-all"
-                                >
-                                  <Trash2 size={12} />
-                                </button>
-                              </div>
-                              <p className={`text-[12px] mt-[2px] ${notification.read ? 'text-[#5A5A5A]' : 'text-[#8F8F8F]'}`}>
-                                {notification.message}
-                              </p>
-                              <p className="text-[10px] text-[#5A5A5A] mt-[4px]">{notification.time}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Footer */}
-                {notifications.length > 0 && (
+                  <div className="max-h-[300px] overflow-y-auto">
+                    {notifications.map((notif) => (
+                      <div 
+                        key={notif.id}
+                        className={`px-[16px] py-[12px] border-l-2 hover:bg-[rgba(255,255,255,0.02)] transition-all cursor-pointer ${
+                          notif.read ? 'border-transparent' : 'border-[#00FF66]'
+                        }`}
+                      >
+                        <p className={`text-[13px] font-medium ${notif.read ? 'text-[#8F8F8F]' : 'text-[#D5FFD6]'}`}>
+                          {notif.title}
+                        </p>
+                        <p className="text-[12px] text-[#5A5A5A] mt-[2px]">{notif.message}</p>
+                        <p className="text-[10px] text-[#5A5A5A] mt-[4px]">{notif.time}</p>
+                      </div>
+                    ))}
+                  </div>
                   <div className="p-[12px] border-t border-[#1A1A1A]">
-                    <button 
-                      onClick={() => {
-                        onNavigate?.('notifications');
-                        setShowNotifications(false);
-                      }}
-                      className="w-full py-[10px] text-center text-[13px] font-medium text-[#00FF66] hover:bg-[rgba(0,255,102,0.1)] rounded-[8px] transition-all"
-                    >
+                    <button className="w-full py-[8px] text-center text-[12px] font-medium text-[#00FF66] hover:bg-[rgba(0,255,102,0.1)] rounded-[8px] transition-all">
                       View all notifications
                     </button>
                   </div>
-                )}
-              </div>
+                </div>
+              </>
             )}
           </div>
 
-          {/* User Profile with Dropdown */}
+          {/* User Profile with Enhanced Dropdown */}
           <div 
             className="relative"
-            ref={profileMenuRef}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+            ref={profileRef}
+            onMouseEnter={() => setShowProfileMenu(true)}
+            onMouseLeave={() => setShowProfileMenu(false)}
           >
             <div 
-              className={`flex items-center gap-[12px] pl-[16px] border-l border-[#1A1A1A] cursor-pointer transition-all duration-200 ${
-                showProfileMenu 
-                  ? 'bg-[rgba(0,255,102,0.05)]' 
-                  : 'hover:bg-[rgba(255,255,255,0.02)]'
+              className={`flex items-center gap-[12px] pl-[16px] border-l border-[#1A1A1A] cursor-pointer transition-all ${
+                showProfileMenu ? 'opacity-100' : 'hover:opacity-80'
               }`}
-              style={{ padding: '8px 0 8px 16px', marginLeft: '0', borderRadius: '12px' }}
             >
               <div className="text-right hidden sm:block">
                 <p className={`text-[12px] font-medium transition-colors ${showProfileMenu ? 'text-[#00FF66]' : 'text-[#D5FFD6]'}`}>Admin User</p>
                 <p className="text-[10px] text-[#8F8F8F]">Admin@cybercyko.com</p>
               </div>
-              <div className={`w-[40px] h-[40px] rounded-[12px] bg-gradient-to-br from-[#00FF66] to-[#00CC52] flex items-center justify-center border-2 transition-all duration-200 ${
-                showProfileMenu ? 'border-[#00FF66] scale-105 shadow-[0_0_20px_rgba(0,255,102,0.3)]' : 'border-[#1A1A1A]'
-              }`}>
-                <User size={20} className="text-[#050505]" />
+              <div className="relative">
+                <div className={`w-[40px] h-[40px] rounded-[12px] bg-gradient-to-br from-[#00FF66] to-[#00CC52] flex items-center justify-center border-2 transition-all ${
+                  showProfileMenu ? 'border-[#00FF66] scale-105' : 'border-[#1A1A1A]'
+                }`}>
+                  <User size={20} className="text-[#050505]" />
+                </div>
+                {/* Online indicator */}
+                <span className="absolute -bottom-[2px] -right-[2px] w-[12px] h-[12px] bg-[#00FF66] rounded-full border-2 border-[#0D0D0D]" />
               </div>
-              <ChevronDown 
-                size={16} 
-                className={`text-[#8F8F8F] transition-transform duration-200 ${showProfileMenu ? 'rotate-180 text-[#00FF66]' : ''}`} 
-              />
+              <ChevronDown size={16} className={`text-[#8F8F8F] transition-transform ${showProfileMenu ? 'rotate-180 text-[#00FF66]' : ''}`} />
             </div>
 
-            {/* Profile Dropdown Menu */}
+            {/* Enhanced Profile Dropdown */}
             {showProfileMenu && (
-              <div 
-                className="absolute right-0 top-full mt-[4px] w-[320px] bg-[#0F0F0F]/95 backdrop-blur-xl border border-[#1A1A1A] rounded-[16px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden max-h-[85vh] overflow-y-auto"
-                style={{ 
-                  animation: 'fadeInDown 0.2s ease-out',
-                }}
-              >
-                {/* Profile Header */}
-                <div className="p-[16px] border-b border-[#1A1A1A] bg-gradient-to-br from-[rgba(0,255,102,0.15)] via-[rgba(0,255,102,0.05)] to-transparent">
-                  <div className="flex items-center gap-[14px]">
-                    <div className="relative">
-                      <div className="w-[52px] h-[52px] rounded-[14px] bg-gradient-to-br from-[#00FF66] to-[#00CC52] flex items-center justify-center shadow-[0_4px_20px_rgba(0,255,102,0.3)]">
-                        <User size={26} className="text-[#050505]" />
+              <>
+                <div className="absolute right-0 top-full h-[8px] w-[300px]" />
+                <div 
+                  className="absolute right-0 top-full mt-[8px] w-[300px] bg-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden max-h-[80vh] overflow-y-auto z-50"
+                  style={{ animation: 'fadeInDown 0.2s ease-out' }}
+                >
+                  {/* Profile Header */}
+                  <div className="p-[14px] border-b border-[#1A1A1A] bg-gradient-to-br from-[rgba(0,255,102,0.15)] via-[rgba(0,255,102,0.05)] to-transparent">
+                    <div className="flex items-center gap-[12px]">
+                      <div className="relative">
+                        <div className="w-[48px] h-[48px] rounded-[12px] bg-gradient-to-br from-[#00FF66] to-[#00CC52] flex items-center justify-center shadow-[0_4px_16px_rgba(0,255,102,0.3)]">
+                          <User size={24} className="text-[#050505]" />
+                        </div>
+                        <span className="absolute -bottom-1 -right-1 w-[14px] h-[14px] bg-[#00FF66] rounded-full border-2 border-[#0A0A0A] flex items-center justify-center">
+                          <Check size={8} className="text-[#050505]" />
+                        </span>
                       </div>
-                      <div className="absolute -bottom-1 -right-1 w-[16px] h-[16px] bg-[#00FF66] rounded-full border-2 border-[#0F0F0F] flex items-center justify-center">
-                        <svg className="w-[8px] h-[8px] text-[#050505]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[15px] font-semibold text-[#D5FFD6]">Admin User</p>
-                      <p className="text-[12px] text-[#8F8F8F] mb-[6px]">Admin@cybercyko.com</p>
-                      <div className="flex items-center gap-[6px]">
-                        <span className="inline-flex items-center gap-[4px] px-[8px] py-[3px] bg-[#00FF66]/20 text-[#00FF66] text-[10px] font-semibold rounded-full">
-                          <Shield size={10} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[15px] font-semibold text-[#D5FFD6]">Admin User</p>
+                        <p className="text-[11px] text-[#8F8F8F] truncate">Admin@cybercyko.com</p>
+                        <span className="inline-flex items-center gap-[4px] px-[6px] py-[2px] bg-[#00FF66]/20 text-[#00FF66] text-[9px] font-semibold rounded-full mt-[4px]">
+                          <Shield size={9} />
                           Administrator
                         </span>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Theme Toggle */}
-                <div className="px-[12px] py-[10px] border-b border-[#1A1A1A]">
-                  <div className="flex items-center justify-between px-[4px]">
-                    <div className="flex items-center gap-[10px]">
-                      {isDarkMode ? <Moon size={16} className="text-[#8F8F8F]" /> : <Sun size={16} className="text-[#FFB800]" />}
-                      <span className="text-[13px] text-[#D5FFD6]">Dark Mode</span>
+                  {/* Quick Actions Grid */}
+                  <div className="p-[10px] border-b border-[#1A1A1A]">
+                    <div className="grid grid-cols-3 gap-[6px]">
+                      {[
+                        { icon: UserCircle, label: 'Profile', action: () => openAdminModal('profile') },
+                        { icon: Settings, label: 'Settings', action: () => openAdminModal('preferences') },
+                        { icon: Activity, label: 'Activity', action: () => onNavigate?.('activity') },
+                      ].map((item) => (
+                        <button
+                          key={item.label}
+                          onClick={item.action}
+                          className="flex flex-col items-center gap-[4px] p-[10px] rounded-[8px] bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(0,255,102,0.1)] border border-[#1A1A1A] hover:border-[#00FF66]/30 transition-all group"
+                        >
+                          <item.icon size={16} className="text-[#8F8F8F] group-hover:text-[#00FF66]" />
+                          <span className="text-[9px] text-[#8F8F8F] group-hover:text-[#00FF66]">{item.label}</span>
+                        </button>
+                      ))}
                     </div>
-                    <button
-                      onClick={() => setIsDarkMode(!isDarkMode)}
-                      className={`relative w-[44px] h-[24px] rounded-full transition-all ${
-                        isDarkMode ? 'bg-[#00FF66]' : 'bg-[#2A2A2A]'
-                      }`}
-                    >
-                      <div className={`absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white shadow transition-transform ${
-                        isDarkMode ? 'translate-x-[23px]' : 'translate-x-[3px]'
-                      }`} />
-                    </button>
                   </div>
-                </div>
 
-                {/* Quick Actions */}
-                <div className="px-[12px] py-[10px] border-b border-[#1A1A1A]">
-                  <p className="text-[10px] text-[#8F8F8F] uppercase tracking-wider mb-[8px] px-[4px]">Quick Actions</p>
-                  <div className="grid grid-cols-3 gap-[8px]">
-                    <button 
-                      onClick={() => { onNavigate?.('profile'); setShowProfileMenu(false); }}
-                      className="flex flex-col items-center gap-[6px] p-[12px] rounded-[10px] bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(0,255,102,0.1)] border border-[#1A1A1A] hover:border-[#00FF66]/30 transition-all group"
-                    >
-                      <UserCircle size={18} className="text-[#8F8F8F] group-hover:text-[#00FF66]" />
-                      <span className="text-[10px] text-[#8F8F8F] group-hover:text-[#00FF66]">Profile</span>
-                    </button>
-                    <button 
-                      onClick={() => { onNavigate?.('profile'); setShowProfileMenu(false); }}
-                      className="flex flex-col items-center gap-[6px] p-[12px] rounded-[10px] bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(0,255,102,0.1)] border border-[#1A1A1A] hover:border-[#00FF66]/30 transition-all group"
-                    >
-                      <Settings size={18} className="text-[#8F8F8F] group-hover:text-[#00FF66]" />
-                      <span className="text-[10px] text-[#8F8F8F] group-hover:text-[#00FF66]">Settings</span>
-                    </button>
-                    <button 
-                      onClick={() => { onNavigate?.('activity'); setShowProfileMenu(false); }}
-                      className="flex flex-col items-center gap-[6px] p-[12px] rounded-[10px] bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(0,255,102,0.1)] border border-[#1A1A1A] hover:border-[#00FF66]/30 transition-all group"
-                    >
-                      <Activity size={18} className="text-[#8F8F8F] group-hover:text-[#00FF66]" />
-                      <span className="text-[10px] text-[#8F8F8F] group-hover:text-[#00FF66]">Activity</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Menu Items */}
-                <div className="py-[8px] px-[8px]">
-                  {profileMenuItems.map((item, index) => {
-                    const Icon = item.icon;
-                    return (
+                  {/* Dark Mode Toggle */}
+                  <div className="px-[12px] py-[10px] border-b border-[#1A1A1A]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-[8px]">
+                        {isDarkMode ? <Moon size={14} className="text-[#8F8F8F]" /> : <Sun size={14} className="text-[#FFCC00]" />}
+                        <span className="text-[12px] text-[#D5FFD6]">Dark Mode</span>
+                      </div>
                       <button
-                        key={index}
-                        onClick={() => {
-                          item.action();
-                          setShowProfileMenu(false);
-                        }}
-                        className="w-full flex items-center gap-[10px] px-[10px] py-[9px] text-[#8F8F8F] hover:bg-[rgba(0,255,102,0.1)] hover:text-[#00FF66] rounded-[8px] transition-all duration-200 group"
+                        onClick={() => setIsDarkMode(!isDarkMode)}
+                        className={`relative w-[40px] h-[22px] rounded-full transition-all ${
+                          isDarkMode ? 'bg-[#00FF66]' : 'bg-[#2A2A2A]'
+                        }`}
                       >
-                        <div className="w-[28px] h-[28px] rounded-[6px] bg-[#1A1A1A] group-hover:bg-[rgba(0,255,102,0.2)] flex items-center justify-center transition-all duration-200">
-                          <Icon size={14} className="group-hover:scale-110 transition-transform" />
+                        <div className={`absolute top-[3px] w-[16px] h-[16px] rounded-full bg-white shadow transition-transform ${
+                          isDarkMode ? 'translate-x-[21px]' : 'translate-x-[3px]'
+                        }`} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div className="py-[6px]">
+                    {[
+                      { icon: Key, label: 'Security', badge: twoFactorEnabled ? '2FA' : null, badgeColor: '#00FF66', action: () => openAdminModal('security') },
+                      { icon: Smartphone, label: 'Sessions', badge: `${sessions.length}`, badgeColor: '#60A5FA', action: () => openAdminModal('sessions') },
+                      { icon: Globe, label: 'Language', value: language, action: () => openAdminModal('preferences') },
+                      { icon: Download, label: 'Download Data', action: () => {} },
+                      { icon: HelpCircle, label: 'Help', external: true, action: () => {} },
+                    ].map((item) => (
+                      <button
+                        key={item.label}
+                        onClick={item.action}
+                        className="w-full flex items-center gap-[10px] px-[12px] py-[9px] text-[#8F8F8F] hover:bg-[rgba(0,255,102,0.05)] hover:text-[#00FF66] transition-all group"
+                      >
+                        <div className="w-[28px] h-[28px] rounded-[6px] bg-[#1A1A1A] group-hover:bg-[rgba(0,255,102,0.15)] flex items-center justify-center transition-all">
+                          <item.icon size={14} />
                         </div>
-                        <span className="text-[12px] font-medium flex-1 text-left">{item.label}</span>
-                        {(item as any).badge && (
-                          <span className="px-[6px] py-[2px] bg-[#00FF66]/20 text-[#00FF66] text-[9px] font-bold rounded-full">
-                            {(item as any).badge}
+                        <span className="text-[12px] flex-1 text-left">{item.label}</span>
+                        {item.badge && (
+                          <span className="px-[6px] py-[1px] rounded-full text-[9px] font-semibold" style={{ backgroundColor: `${item.badgeColor}20`, color: item.badgeColor }}>
+                            {item.badge}
                           </span>
                         )}
-                        {(item as any).value && (
-                          <span className="text-[10px] text-[#5A5A5A]">{(item as any).value}</span>
+                        {item.value && (
+                          <span className="text-[10px] text-[#5A5A5A]">{item.value}</span>
                         )}
-                        {(item as any).shortcut && (
-                          <span className="text-[10px] text-[#5A5A5A] font-mono bg-[#1A1A1A] px-[6px] py-[2px] rounded">
-                            {(item as any).shortcut}
-                          </span>
+                        {item.external && (
+                          <ExternalLink size={10} className="text-[#5A5A5A]" />
                         )}
                       </button>
-                    );
-                  })}
-                </div>
+                    ))}
+                  </div>
 
-                {/* Logout */}
-                <div className="border-t border-[#1A1A1A] p-[8px]">
-                  <button
-                    onClick={() => {
-                      console.log('Logout clicked');
-                      setShowProfileMenu(false);
-                    }}
-                    className="w-full flex items-center gap-[10px] px-[10px] py-[9px] text-[#FF4444] hover:bg-[rgba(255,68,68,0.15)] rounded-[8px] transition-all duration-200 group"
-                  >
-                    <div className="w-[28px] h-[28px] rounded-[6px] bg-[rgba(255,68,68,0.1)] group-hover:bg-[rgba(255,68,68,0.2)] flex items-center justify-center transition-all duration-200">
-                      <LogOut size={14} className="group-hover:scale-110 transition-transform" />
+                  {/* Keyboard Shortcuts */}
+                  <div className="px-[12px] py-[8px] border-t border-[#1A1A1A] bg-[rgba(0,0,0,0.2)]">
+                    <div className="flex items-center justify-between">
+                      {[
+                        { key: '⌘K', label: 'Search' },
+                        { key: '⌘/', label: 'Help' },
+                        { key: 'Esc', label: 'Close' },
+                      ].map((shortcut) => (
+                        <div key={shortcut.key} className="flex items-center gap-[3px]">
+                          <kbd className="px-[5px] py-[1px] bg-[#1A1A1A] rounded text-[8px] font-mono text-[#8F8F8F]">{shortcut.key}</kbd>
+                          <span className="text-[9px] text-[#5A5A5A]">{shortcut.label}</span>
+                        </div>
+                      ))}
                     </div>
-                    <span className="text-[12px] font-medium">Sign Out</span>
-                    <span className="text-[10px] text-[#5A5A5A] font-mono bg-[rgba(255,68,68,0.1)] px-[6px] py-[2px] rounded ml-auto">
-                      ⌘Q
-                    </span>
-                  </button>
+                  </div>
+
+                  {/* Sign Out */}
+                  <div className="border-t border-[#1A1A1A] p-[6px]">
+                    <button className="w-full flex items-center gap-[10px] px-[10px] py-[8px] text-[#FF4444] hover:bg-[rgba(255,68,68,0.1)] rounded-[6px] transition-all group">
+                      <div className="w-[28px] h-[28px] rounded-[6px] bg-[rgba(255,68,68,0.1)] group-hover:bg-[rgba(255,68,68,0.2)] flex items-center justify-center transition-all">
+                        <LogOut size={14} />
+                      </div>
+                      <span className="text-[12px] font-medium">Sign Out</span>
+                      <kbd className="ml-auto px-[5px] py-[1px] bg-[rgba(255,68,68,0.1)] rounded text-[8px] font-mono text-[#FF4444]">⌘Q</kbd>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
           </div>
         </div>
       </div>
 
-      {/* Admin User Modal - All functions in one place */}
-      {showAdminModal && (
-        <AdminUserModal 
-          activeTab={adminModalTab}
-          onTabChange={setAdminModalTab}
-          onClose={() => setShowAdminModal(false)}
-          language={language}
-          onLanguageChange={setLanguage}
-          isDarkMode={isDarkMode}
-          onDarkModeChange={setIsDarkMode}
-        />
+      {/* Admin Modal - Using Portal to render outside sticky container */}
+      {showAdminModal && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-6" onClick={() => setShowAdminModal(false)}>
+          <div 
+            className="bg-[#0A0A0A] rounded-[20px] w-full max-w-[480px] border border-[#1A1A1A] shadow-2xl overflow-hidden max-h-[80vh] flex flex-col"
+            onClick={e => e.stopPropagation()}
+            style={{ animation: 'fadeInUp 0.2s ease-out' }}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-[20px] border-b border-[#1A1A1A] bg-gradient-to-r from-[rgba(0,255,102,0.1)] to-transparent">
+              <div className="flex items-center gap-[12px]">
+                <div className="w-[44px] h-[44px] rounded-[12px] bg-gradient-to-br from-[#00FF66] to-[#00CC52] flex items-center justify-center">
+                  <User size={22} className="text-[#050505]" />
+                </div>
+                <div>
+                  <p className="text-[16px] font-semibold text-white">Admin User</p>
+                  <p className="text-[12px] text-[#8F8F8F]">Manage your account</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowAdminModal(false)}
+                className="p-[8px] rounded-[8px] text-[#8F8F8F] hover:bg-[#1A1A1A] hover:text-white transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex border-b border-[#1A1A1A] px-[20px]">
+              {[
+                { id: 'profile' as const, label: 'Profile', icon: User },
+                { id: 'security' as const, label: 'Security', icon: Shield },
+                { id: 'sessions' as const, label: 'Sessions', icon: Smartphone },
+                { id: 'preferences' as const, label: 'Preferences', icon: Settings },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setAdminModalTab(tab.id)}
+                  className={`flex items-center gap-[6px] px-[16px] py-[14px] text-[13px] font-medium border-b-2 transition-all ${
+                    adminModalTab === tab.id
+                      ? 'text-[#00FF66] border-[#00FF66]'
+                      : 'text-[#8F8F8F] border-transparent hover:text-white'
+                  }`}
+                >
+                  <tab.icon size={14} />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-[20px] flex-1 overflow-y-auto">
+              {adminModalTab === 'profile' && (
+                <div className="space-y-[16px]">
+                  <div>
+                    <label className="block text-[11px] text-[#8F8F8F] uppercase tracking-wider mb-[8px]">Full Name</label>
+                    <input
+                      type="text"
+                      defaultValue="Admin User"
+                      className="w-full bg-[#0F0F0F] border border-[#1A1A1A] rounded-[10px] px-[14px] py-[12px] text-white text-[14px] focus:outline-none focus:border-[#00FF66] transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-[#8F8F8F] uppercase tracking-wider mb-[8px]">Email Address</label>
+                    <input
+                      type="email"
+                      defaultValue="admin@cybercyko.com"
+                      className="w-full bg-[#0F0F0F] border border-[#1A1A1A] rounded-[10px] px-[14px] py-[12px] text-white text-[14px] focus:outline-none focus:border-[#00FF66] transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-[#8F8F8F] uppercase tracking-wider mb-[8px]">Role</label>
+                    <div className="px-[14px] py-[12px] bg-[#0F0F0F] border border-[#1A1A1A] rounded-[10px] text-[14px] text-[#00FF66] flex items-center gap-[8px]">
+                      <Shield size={16} />
+                      Administrator
+                    </div>
+                  </div>
+                  <button className="w-full py-[12px] bg-[#00FF66] text-[#050505] text-[14px] font-semibold rounded-[10px] hover:bg-[#00DD55] transition-all mt-[8px]">
+                    Save Changes
+                  </button>
+                </div>
+              )}
+
+              {adminModalTab === 'security' && (
+                <div className="space-y-[16px]">
+                  {/* 2FA */}
+                  <div className="p-[16px] bg-[#0F0F0F] border border-[#1A1A1A] rounded-[12px]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-[12px]">
+                        <div className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center ${twoFactorEnabled ? 'bg-[rgba(0,255,102,0.15)]' : 'bg-[#1A1A1A]'}`}>
+                          <Lock size={18} className={twoFactorEnabled ? 'text-[#00FF66]' : 'text-[#8F8F8F]'} />
+                        </div>
+                        <div>
+                          <p className="text-[14px] font-medium text-white">Two-Factor Authentication</p>
+                          <p className="text-[12px] text-[#8F8F8F]">{twoFactorEnabled ? 'Enabled' : 'Disabled'}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
+                        className={`relative w-[48px] h-[26px] rounded-full transition-all ${twoFactorEnabled ? 'bg-[#00FF66]' : 'bg-[#2A2A2A]'}`}
+                      >
+                        <div className={`absolute top-[3px] w-[20px] h-[20px] rounded-full bg-white shadow transition-transform ${twoFactorEnabled ? 'translate-x-[25px]' : 'translate-x-[3px]'}`} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Change Password */}
+                  <div>
+                    <p className="text-[11px] text-[#8F8F8F] uppercase tracking-wider mb-[12px]">Change Password</p>
+                    <div className="space-y-[10px]">
+                      <input type="password" placeholder="Current password" className="w-full bg-[#0F0F0F] border border-[#1A1A1A] rounded-[10px] px-[14px] py-[12px] text-white text-[14px] focus:outline-none focus:border-[#00FF66]" />
+                      <input type="password" placeholder="New password" className="w-full bg-[#0F0F0F] border border-[#1A1A1A] rounded-[10px] px-[14px] py-[12px] text-white text-[14px] focus:outline-none focus:border-[#00FF66]" />
+                      <input type="password" placeholder="Confirm new password" className="w-full bg-[#0F0F0F] border border-[#1A1A1A] rounded-[10px] px-[14px] py-[12px] text-white text-[14px] focus:outline-none focus:border-[#00FF66]" />
+                      <button className="w-full py-[12px] bg-[#00FF66] text-[#050505] text-[14px] font-semibold rounded-[10px] hover:bg-[#00DD55] transition-all">
+                        Update Password
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {adminModalTab === 'sessions' && (
+                <div className="space-y-[12px]">
+                  {sessions.map((session) => (
+                    <div 
+                      key={session.id}
+                      className={`p-[14px] rounded-[12px] border ${session.current ? 'bg-[rgba(0,255,102,0.05)] border-[#00FF66]/30' : 'bg-[#0F0F0F] border-[#1A1A1A]'}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-[12px]">
+                          <div className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center ${session.current ? 'bg-[rgba(0,255,102,0.15)]' : 'bg-[#1A1A1A]'}`}>
+                            {session.device.includes('iPhone') ? <Smartphone size={18} className={session.current ? 'text-[#00FF66]' : 'text-[#8F8F8F]'} /> : <Monitor size={18} className={session.current ? 'text-[#00FF66]' : 'text-[#8F8F8F]'} />}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-[8px]">
+                              <p className="text-[14px] font-medium text-white">{session.device}</p>
+                              {session.current && <span className="px-[6px] py-[2px] bg-[#00FF66]/20 text-[#00FF66] text-[9px] font-bold rounded-full">Current</span>}
+                            </div>
+                            <p className="text-[12px] text-[#8F8F8F]">{session.browser} • {session.location}</p>
+                            <p className="text-[11px] text-[#5A5A5A]">{session.lastActive}</p>
+                          </div>
+                        </div>
+                        {!session.current && (
+                          <button className="px-[12px] py-[6px] text-[12px] text-[#FF4444] hover:bg-[rgba(255,68,68,0.1)] rounded-[6px] transition-all">
+                            Revoke
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  <button className="w-full py-[10px] text-[#FF4444] text-[13px] font-medium bg-[rgba(255,68,68,0.05)] hover:bg-[rgba(255,68,68,0.1)] border border-[#FF4444]/20 rounded-[10px] transition-all mt-[8px]">
+                    Sign Out All Other Devices
+                  </button>
+                </div>
+              )}
+
+              {adminModalTab === 'preferences' && (
+                <div className="space-y-[16px]">
+                  {/* Language */}
+                  <div>
+                    <p className="text-[11px] text-[#8F8F8F] uppercase tracking-wider mb-[10px]">Language</p>
+                    <div className="grid grid-cols-3 gap-[8px]">
+                      {['English', 'Spanish', 'French', 'German', 'Japanese', 'Chinese'].map((lang) => (
+                        <button
+                          key={lang}
+                          onClick={() => setLanguage(lang)}
+                          className={`px-[12px] py-[10px] rounded-[8px] text-[12px] font-medium transition-all ${
+                            language === lang
+                              ? 'bg-[#00FF66] text-[#050505]'
+                              : 'bg-[#0F0F0F] border border-[#1A1A1A] text-[#8F8F8F] hover:border-[#2A2A2A]'
+                          }`}
+                        >
+                          {lang}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Theme */}
+                  <div className="flex items-center justify-between p-[14px] bg-[#0F0F0F] border border-[#1A1A1A] rounded-[12px]">
+                    <div className="flex items-center gap-[10px]">
+                      {isDarkMode ? <Moon size={18} className="text-[#8F8F8F]" /> : <Sun size={18} className="text-[#FFCC00]" />}
+                      <span className="text-[14px] text-white">Dark Mode</span>
+                    </div>
+                    <button
+                      onClick={() => setIsDarkMode(!isDarkMode)}
+                      className={`relative w-[48px] h-[26px] rounded-full transition-all ${isDarkMode ? 'bg-[#00FF66]' : 'bg-[#2A2A2A]'}`}
+                    >
+                      <div className={`absolute top-[3px] w-[20px] h-[20px] rounded-full bg-white shadow transition-transform ${isDarkMode ? 'translate-x-[25px]' : 'translate-x-[3px]'}`} />
+                    </button>
+                  </div>
+
+                  {/* Download Data */}
+                  <button className="w-full flex items-center justify-center gap-[8px] py-[12px] bg-[#0F0F0F] border border-[#1A1A1A] text-white text-[14px] font-medium rounded-[10px] hover:bg-[#1A1A1A] transition-all">
+                    <Download size={16} />
+                    Download My Data
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
 
       <style>{`
@@ -762,360 +822,17 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
             transform: translateY(0);
           }
         }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
       `}</style>
     </div>
   );
 }
-
-// Comprehensive Admin User Modal - All functions in one place
-interface AdminUserModalProps {
-  activeTab: 'profile' | 'security' | 'sessions' | 'preferences' | 'help';
-  onTabChange: (tab: 'profile' | 'security' | 'sessions' | 'preferences' | 'help') => void;
-  onClose: () => void;
-  language: string;
-  onLanguageChange: (lang: string) => void;
-  isDarkMode: boolean;
-  onDarkModeChange: (value: boolean) => void;
-}
-
-function AdminUserModal({ activeTab, onTabChange, onClose, language, onLanguageChange, isDarkMode, onDarkModeChange }: AdminUserModalProps) {
-  const [success, setSuccess] = useState<string | null>(null);
-  
-  // Password state
-  const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
-  const [passwordError, setPasswordError] = useState('');
-  
-  // 2FA state
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
-  
-  // Sessions state
-  const [sessions, setSessions] = useState([
-    { id: 1, device: 'MacBook Pro', browser: 'Chrome', location: 'San Francisco', current: true },
-    { id: 2, device: 'iPhone 15', browser: 'Safari', location: 'San Francisco', current: false },
-    { id: 3, device: 'Windows PC', browser: 'Firefox', location: 'New York', current: false },
-  ]);
-
-  const tabs = [
-    { id: 'profile' as const, label: 'Profile', icon: User },
-    { id: 'security' as const, label: 'Security', icon: Shield },
-    { id: 'sessions' as const, label: 'Sessions', icon: Smartphone },
-    { id: 'preferences' as const, label: 'Preferences', icon: Settings },
-    { id: 'help' as const, label: 'Help', icon: HelpCircle },
-  ];
-
-  const languages = [
-    { name: 'English', flag: '🇺🇸' },
-    { name: 'Español', flag: '🇪🇸' },
-    { name: 'Français', flag: '🇫🇷' },
-    { name: 'Deutsch', flag: '🇩🇪' },
-    { name: '日本語', flag: '🇯🇵' },
-    { name: '中文', flag: '🇨🇳' },
-  ];
-
-  const showSuccess = (message: string, autoClose = false) => {
-    setSuccess(message);
-    setTimeout(() => {
-      setSuccess(null);
-      if (autoClose) onClose();
-    }, autoClose ? 1500 : 2000);
-  };
-
-  const handlePasswordChange = () => {
-    setPasswordError('');
-    if (!passwords.current || !passwords.new || !passwords.confirm) {
-      setPasswordError('All fields required');
-      return;
-    }
-    if (passwords.new.length < 8) {
-      setPasswordError('Min 8 characters');
-      return;
-    }
-    if (passwords.new !== passwords.confirm) {
-      setPasswordError('Passwords don\'t match');
-      return;
-    }
-    setPasswords({ current: '', new: '', confirm: '' });
-    showSuccess('Password updated!');
-  };
-
-  const terminateSession = (id: number) => {
-    setSessions(prev => prev.filter(s => s.id !== id));
-    showSuccess('Session terminated');
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 backdrop-blur-sm p-4 pt-[80px]" onClick={onClose}>
-      <div 
-        className="bg-[#0A0A0A] rounded-[16px] w-full max-w-[480px] border border-[#1A1A1A] shadow-2xl overflow-hidden max-h-[calc(100vh-100px)] flex flex-col"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-[12px] border-b border-[#1A1A1A] shrink-0">
-          <div className="flex items-center gap-[10px]">
-            <div className="w-[36px] h-[36px] rounded-[8px] bg-gradient-to-br from-[#00FF66] to-[#00CC52] flex items-center justify-center">
-              <User size={18} className="text-[#050505]" />
-            </div>
-            <div>
-              <p className="text-[13px] font-semibold text-white">Admin User</p>
-              <p className="text-[10px] text-[#8F8F8F]">admin@cybercyko.com</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-[6px] rounded-[6px] text-[#8F8F8F] hover:bg-[#1A1A1A] hover:text-white transition-all">
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* Success Message */}
-        {success && (
-          <div className="mx-[14px] mt-[10px] p-[8px] bg-[rgba(0,255,102,0.1)] border border-[#00FF66]/30 rounded-[8px] flex items-center gap-[6px] shrink-0">
-            <Check size={12} className="text-[#00FF66]" />
-            <span className="text-[11px] text-[#00FF66]">{success}</span>
-          </div>
-        )}
-
-        {/* Tabs */}
-        <div className="flex border-b border-[#1A1A1A] px-[12px] overflow-x-auto shrink-0">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => onTabChange(tab.id)}
-              className={`flex items-center gap-[4px] px-[10px] py-[10px] text-[11px] font-medium border-b-2 transition-all whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'text-[#00FF66] border-[#00FF66]'
-                  : 'text-[#8F8F8F] border-transparent hover:text-white'
-              }`}
-            >
-              <tab.icon size={12} />
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Content */}
-        <div className="p-[14px] flex-1 overflow-y-auto">
-          {/* Profile Tab */}
-          {activeTab === 'profile' && (
-            <div className="space-y-[10px]">
-              <div>
-                <label className="block text-[10px] text-[#8F8F8F] uppercase mb-[4px]">Full Name</label>
-                <input
-                  type="text"
-                  defaultValue="Admin User"
-                  className="w-full bg-[#0F0F0F] border border-[#1A1A1A] rounded-[6px] px-[10px] py-[8px] text-white text-[12px] focus:outline-none focus:border-[#00FF66]"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] text-[#8F8F8F] uppercase mb-[4px]">Email</label>
-                <input
-                  type="email"
-                  defaultValue="admin@cybercyko.com"
-                  className="w-full bg-[#0F0F0F] border border-[#1A1A1A] rounded-[6px] px-[10px] py-[8px] text-white text-[12px] focus:outline-none focus:border-[#00FF66]"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] text-[#8F8F8F] uppercase mb-[4px]">Role</label>
-                <div className="px-[10px] py-[8px] bg-[#0F0F0F] border border-[#1A1A1A] rounded-[6px] text-[12px] text-[#00FF66]">
-                  Administrator
-                </div>
-              </div>
-              <button
-                onClick={() => showSuccess('Profile saved!', true)}
-                className="w-full py-[8px] bg-[#00FF66] text-[#050505] text-[11px] font-semibold rounded-[6px] hover:bg-[#00DD55] transition-all mt-[6px]"
-              >
-                Save Changes
-              </button>
-            </div>
-          )}
-
-          {/* Security Tab */}
-          {activeTab === 'security' && (
-            <div className="space-y-[12px]">
-              {/* 2FA */}
-              <div className="p-[10px] bg-[#0F0F0F] border border-[#1A1A1A] rounded-[8px]">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-[8px]">
-                    <Lock size={14} className="text-[#00FF66]" />
-                    <div>
-                      <p className="text-[12px] font-medium text-white">Two-Factor Auth</p>
-                      <p className="text-[9px] text-[#8F8F8F]">{twoFactorEnabled ? 'Enabled' : 'Disabled'}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => { setTwoFactorEnabled(!twoFactorEnabled); showSuccess('2FA ' + (!twoFactorEnabled ? 'enabled' : 'disabled')); }}
-                    className={`relative w-[36px] h-[20px] rounded-full transition-all ${twoFactorEnabled ? 'bg-[#00FF66]' : 'bg-[#2A2A2A]'}`}
-                  >
-                    <div className={`absolute top-[2px] w-[16px] h-[16px] rounded-full bg-white shadow transition-transform ${twoFactorEnabled ? 'translate-x-[18px]' : 'translate-x-[2px]'}`} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Change Password */}
-              <div>
-                <p className="text-[10px] text-[#8F8F8F] uppercase mb-[8px]">Change Password</p>
-                <div className="space-y-[6px]">
-                  <input
-                    type="password"
-                    placeholder="Current password"
-                    value={passwords.current}
-                    onChange={(e) => setPasswords(p => ({ ...p, current: e.target.value }))}
-                    className="w-full bg-[#0F0F0F] border border-[#1A1A1A] rounded-[6px] px-[10px] py-[8px] text-white text-[11px] focus:outline-none focus:border-[#00FF66]"
-                  />
-                  <input
-                    type="password"
-                    placeholder="New password (min 8 chars)"
-                    value={passwords.new}
-                    onChange={(e) => setPasswords(p => ({ ...p, new: e.target.value }))}
-                    className="w-full bg-[#0F0F0F] border border-[#1A1A1A] rounded-[6px] px-[10px] py-[8px] text-white text-[11px] focus:outline-none focus:border-[#00FF66]"
-                  />
-                  <input
-                    type="password"
-                    placeholder="Confirm new password"
-                    value={passwords.confirm}
-                    onChange={(e) => setPasswords(p => ({ ...p, confirm: e.target.value }))}
-                    className="w-full bg-[#0F0F0F] border border-[#1A1A1A] rounded-[6px] px-[10px] py-[8px] text-white text-[11px] focus:outline-none focus:border-[#00FF66]"
-                  />
-                  {passwordError && <p className="text-[10px] text-[#FF4444]">{passwordError}</p>}
-                  <button
-                    onClick={handlePasswordChange}
-                    className="w-full py-[8px] bg-[#00FF66] text-[#050505] text-[11px] font-semibold rounded-[6px] hover:bg-[#00DD55] transition-all"
-                  >
-                    Update Password
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Sessions Tab */}
-          {activeTab === 'sessions' && (
-            <div className="space-y-[8px]">
-              {sessions.map((session) => (
-                <div key={session.id} className={`p-[10px] rounded-[8px] border ${session.current ? 'bg-[rgba(0,255,102,0.05)] border-[#00FF66]/20' : 'bg-[#0F0F0F] border-[#1A1A1A]'}`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-[8px]">
-                      <div className={`p-[6px] rounded-[6px] ${session.current ? 'bg-[rgba(0,255,102,0.1)]' : 'bg-[#1A1A1A]'}`}>
-                        {session.device.includes('iPhone') ? <Smartphone size={12} className={session.current ? 'text-[#00FF66]' : 'text-[#8F8F8F]'} /> : <Monitor size={12} className={session.current ? 'text-[#00FF66]' : 'text-[#8F8F8F]'} />}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-[4px]">
-                          <p className="text-[11px] font-medium text-white">{session.device}</p>
-                          {session.current && <span className="px-[3px] py-[1px] bg-[#00FF66]/20 text-[#00FF66] text-[7px] font-bold rounded">Current</span>}
-                        </div>
-                        <p className="text-[9px] text-[#8F8F8F]">{session.browser} • {session.location}</p>
-                      </div>
-                    </div>
-                    {!session.current && (
-                      <button onClick={() => terminateSession(session.id)} className="text-[9px] text-[#FF4444] hover:underline">
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {sessions.filter(s => !s.current).length > 0 && (
-                <button 
-                  onClick={() => { setSessions(prev => prev.filter(s => s.current)); showSuccess('All sessions terminated'); }}
-                  className="w-full py-[8px] text-[#FF4444] text-[10px] font-medium bg-[rgba(255,68,68,0.05)] hover:bg-[rgba(255,68,68,0.1)] border border-[#FF4444]/20 rounded-[6px] transition-all mt-[4px]"
-                >
-                  Sign Out All Other Devices
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Preferences Tab */}
-          {activeTab === 'preferences' && (
-            <div className="space-y-[12px]">
-              {/* Dark Mode */}
-              <div className="flex items-center justify-between p-[10px] bg-[#0F0F0F] border border-[#1A1A1A] rounded-[8px]">
-                <div className="flex items-center gap-[8px]">
-                  {isDarkMode ? <Moon size={14} className="text-[#8F8F8F]" /> : <Sun size={14} className="text-[#FFB800]" />}
-                  <span className="text-[12px] text-white">Dark Mode</span>
-                </div>
-                <button
-                  onClick={() => onDarkModeChange(!isDarkMode)}
-                  className={`relative w-[36px] h-[20px] rounded-full transition-all ${isDarkMode ? 'bg-[#00FF66]' : 'bg-[#2A2A2A]'}`}
-                >
-                  <div className={`absolute top-[2px] w-[16px] h-[16px] rounded-full bg-white shadow transition-transform ${isDarkMode ? 'translate-x-[18px]' : 'translate-x-[2px]'}`} />
-                </button>
-              </div>
-
-              {/* Language */}
-              <div>
-                <p className="text-[10px] text-[#8F8F8F] uppercase mb-[6px]">Language</p>
-                <div className="grid grid-cols-3 gap-[4px]">
-                  {languages.map((lang) => (
-                    <button
-                      key={lang.name}
-                      onClick={() => { onLanguageChange(lang.name); showSuccess('Language changed!'); }}
-                      className={`flex items-center gap-[4px] p-[8px] rounded-[6px] text-left transition-all ${
-                        language === lang.name
-                          ? 'bg-[rgba(0,255,102,0.1)] border border-[#00FF66]/30'
-                          : 'bg-[#0F0F0F] border border-[#1A1A1A] hover:border-[#2A2A2A]'
-                      }`}
-                    >
-                      <span className="text-[14px]">{lang.flag}</span>
-                      <span className={`text-[10px] ${language === lang.name ? 'text-[#00FF66]' : 'text-white'}`}>{lang.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Download Data */}
-              <button
-                onClick={() => showSuccess('Download started!')}
-                className="w-full flex items-center justify-center gap-[6px] py-[8px] bg-[#0F0F0F] border border-[#1A1A1A] text-white text-[11px] font-medium rounded-[6px] hover:bg-[#1A1A1A] transition-all"
-              >
-                <Download size={12} />
-                Download My Data
-              </button>
-            </div>
-          )}
-
-          {/* Help Tab */}
-          {activeTab === 'help' && (
-            <div className="space-y-[10px]">
-              <div className="grid grid-cols-2 gap-[6px]">
-                {[
-                  { icon: '📚', title: 'Docs', desc: 'Guides' },
-                  { icon: '💬', title: 'Chat', desc: 'Support' },
-                  { icon: '📧', title: 'Email', desc: 'Contact' },
-                  { icon: '🎥', title: 'Videos', desc: 'Tutorials' },
-                ].map((item, idx) => (
-                  <button key={idx} className="p-[10px] bg-[#0F0F0F] rounded-[8px] border border-[#1A1A1A] hover:border-[#00FF66]/30 transition-all text-left">
-                    <span className="text-[14px] block mb-[2px]">{item.icon}</span>
-                    <p className="text-[11px] font-medium text-white">{item.title}</p>
-                    <p className="text-[9px] text-[#5A5A5A]">{item.desc}</p>
-                  </button>
-                ))}
-              </div>
-
-              {/* Shortcuts */}
-              <div>
-                <p className="text-[10px] text-[#8F8F8F] uppercase mb-[6px]">Shortcuts</p>
-                <div className="grid grid-cols-2 gap-[4px]">
-                  {[
-                    { key: '⌘K', desc: 'Search' },
-                    { key: '⌘P', desc: 'Profile' },
-                    { key: '⌘/', desc: 'Shortcuts' },
-                    { key: 'Esc', desc: 'Close' },
-                  ].map((s, idx) => (
-                    <div key={idx} className="flex items-center justify-between py-[5px] px-[8px] bg-[#0F0F0F] rounded-[4px]">
-                      <span className="text-[10px] text-white">{s.desc}</span>
-                      <span className="px-[4px] py-[1px] bg-[#1A1A1A] rounded text-[9px] font-mono text-[#8F8F8F]">{s.key}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="p-[8px] bg-[rgba(0,255,102,0.05)] rounded-[6px] border border-[#00FF66]/20">
-                <p className="text-[10px] text-[#8F8F8F]">Email: <span className="text-[#00FF66]">support@cybercyko.com</span></p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-

@@ -649,8 +649,12 @@ export function BubbleMap({ title, height = 500 }: BubbleMapProps) {
     }
   }, [selectedItem, clusteredItems]);
 
-  const handleZoomIn = useCallback(() => setScale(s => Math.min(s * 1.25, 3)), []);
-  const handleZoomOut = useCallback(() => setScale(s => Math.max(s / 1.25, 0.5)), []);
+  // Zoom limits: 0.3x to 5x for more range
+  const MIN_ZOOM = 0.3;
+  const MAX_ZOOM = 5;
+  
+  const handleZoomIn = useCallback(() => setScale(s => Math.min(s * 1.3, MAX_ZOOM)), []);
+  const handleZoomOut = useCallback(() => setScale(s => Math.max(s / 1.3, MIN_ZOOM)), []);
   const handleReset = useCallback(() => {
     setScale(1);
     setPosition({ x: 0, y: 0 });
@@ -693,7 +697,7 @@ export function BubbleMap({ title, height = 500 }: BubbleMapProps) {
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const distance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
-      const newScale = Math.max(0.5, Math.min(3, initialPinchScale * (distance / initialPinchDistance)));
+      const newScale = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, initialPinchScale * (distance / initialPinchDistance)));
       setScale(newScale);
     }
   }, [initialPinchDistance, initialPinchScale]);
@@ -702,16 +706,14 @@ export function BubbleMap({ title, height = 500 }: BubbleMapProps) {
     setInitialPinchDistance(null);
   }, []);
 
-  // Handle wheel zoom on map (Ctrl+wheel or pinch gesture on trackpad)
+  // Handle wheel zoom on map - smooth zooming with scroll wheel
   const handleWheel = useCallback((e: React.WheelEvent) => {
-    // Only zoom if Ctrl is pressed (trackpad pinch triggers this) or if it's a pinch gesture
-    if (e.ctrlKey) {
-      e.preventDefault();
-      e.stopPropagation();
-      const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-      setScale(s => Math.max(0.5, Math.min(3, s * zoomFactor)));
-    }
-    // Regular scroll (no Ctrl) - let it bubble up for page scrolling
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Smoother zoom with smaller increments for buttery feel
+    const zoomFactor = e.deltaY > 0 ? 0.95 : 1.05;
+    setScale(s => Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, s * zoomFactor)));
   }, []);
 
   // Prevent browser's default pinch-zoom on the map container
@@ -787,13 +789,14 @@ export function BubbleMap({ title, height = 500 }: BubbleMapProps) {
       >
         {/* Map Layer - contains SVG and markers, all scale together */}
         <div
-          className="absolute inset-0 transition-transform duration-150 ease-out"
+          className="absolute inset-0"
           style={{
             position: 'relative',
             width: '100%',
             height: '100%',
             transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
             transformOrigin: 'center center',
+            transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
           }}
         >
           {/* SVG Map */}
@@ -840,31 +843,45 @@ export function BubbleMap({ title, height = 500 }: BubbleMapProps) {
           <PopupPanel selectedData={selectedData} containerRef={containerRef} />
         )}
 
-        {/* Controls */}
+        {/* Zoom Controls */}
         <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
-          {[
-            { icon: ZoomIn, action: handleZoomIn, label: 'Zoom In' },
-            { icon: ZoomOut, action: handleZoomOut, label: 'Zoom Out' },
-            { icon: RotateCcw, action: handleReset, label: 'Reset' },
-          ].map(({ icon: Icon, action, label }) => (
           <button
-              key={label}
-              onClick={(e) => { e.stopPropagation(); action(); }}
-              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105"
-              style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}` }}
-              title={label}
-            >
-              <Icon className="w-4 h-4" style={{ color: THEME.textMuted }} />
+            onClick={(e) => { e.stopPropagation(); handleZoomIn(); }}
+            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ease-out hover:scale-110 active:scale-95 group"
+            style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}` }}
+            title="Zoom In"
+          >
+            <ZoomIn className="w-4 h-4 transition-colors duration-200 group-hover:text-[#00FF66]" style={{ color: THEME.textMuted }} />
           </button>
-          ))}
+          <button
+            onClick={(e) => { e.stopPropagation(); handleZoomOut(); }}
+            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ease-out hover:scale-110 active:scale-95 group"
+            style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}` }}
+            title="Zoom Out"
+          >
+            <ZoomOut className="w-4 h-4 transition-colors duration-200 group-hover:text-[#00FF66]" style={{ color: THEME.textMuted }} />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleReset(); }}
+            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ease-out hover:scale-110 active:scale-95 group"
+            style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}` }}
+            title="Reset View"
+          >
+            <RotateCcw className="w-4 h-4 transition-colors duration-200 group-hover:text-[#00FF66]" style={{ color: THEME.textMuted }} />
+          </button>
         </div>
 
         {/* Scale Indicator */}
         <div
-          className="absolute bottom-4 right-4 px-3 py-1.5 rounded-lg text-xs font-medium z-20"
-          style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}`, color: THEME.textMuted }}
+          className="absolute bottom-4 right-4 px-4 py-2 rounded-xl text-sm font-semibold z-20 transition-all duration-300"
+          style={{ 
+            background: THEME.bgCard, 
+            border: `1px solid ${scale !== 1 ? 'rgba(0,255,102,0.3)' : THEME.border}`, 
+            color: scale !== 1 ? '#00FF66' : THEME.textMuted,
+            boxShadow: scale !== 1 ? '0 0 20px rgba(0,255,102,0.1)' : 'none'
+          }}
         >
-            {Math.round(scale * 100)}%
+          {Math.round(scale * 100)}%
         </div>
       </div>
 

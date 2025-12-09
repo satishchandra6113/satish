@@ -23,6 +23,7 @@ interface UserTableProps {
 // Extended user type for the modal
 interface ExtendedUser extends User {
   isActive?: boolean;
+  isOnline?: boolean;
   department?: string;
   phone?: string;
   location?: string;
@@ -32,9 +33,10 @@ interface ExtendedUser extends User {
 type ModalView = 'details' | 'edit' | 'resetPassword' | 'delete' | 'activity';
 
 export function UserTable({ users: initialUsers }: UserTableProps) {
-  const [users, setUsers] = useState(initialUsers.map(user => ({
+  const [users, setUsers] = useState(initialUsers.map((user, index) => ({
     ...user,
-    isActive: user.isActive ?? true // Default to active
+    isActive: user.isActive ?? true, // Default to active
+    isOnline: index % 3 !== 2 // Mock: 2/3 users are online
   })));
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -55,9 +57,10 @@ export function UserTable({ users: initialUsers }: UserTableProps) {
 
   // Update users when initialUsers changes
   useEffect(() => {
-    setUsers(initialUsers.map(user => ({
+    setUsers(initialUsers.map((user, index) => ({
       ...user,
-      isActive: user.isActive ?? true
+      isActive: user.isActive ?? true,
+      isOnline: index % 3 !== 2 // Mock: 2/3 users are online
     })));
     setCurrentPage(1);
   }, [initialUsers]);
@@ -219,6 +222,7 @@ export function UserTable({ users: initialUsers }: UserTableProps) {
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Roles / Groups</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Last Login</th>
+              <th className="px-6 py-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Online Status</th>
               <th className="px-6 py-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Active / Inactive</th>
             </tr>
           </thead>
@@ -264,6 +268,14 @@ export function UserTable({ users: initialUsers }: UserTableProps) {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className={`w-2.5 h-2.5 rounded-full ${user.isOnline ? 'bg-[#00FF66] shadow-[0_0_8px_rgba(0,255,102,0.6)]' : 'bg-gray-500'}`} />
+                    <span className={`text-sm font-medium ${user.isOnline ? 'text-[#00FF66]' : 'text-gray-500'}`}>
+                      {user.isOnline ? 'Online' : 'Offline'}
+                    </span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-center">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -280,11 +292,6 @@ export function UserTable({ users: initialUsers }: UserTableProps) {
                         user.isActive ? 'translate-x-8' : 'translate-x-1'
                       }`}
                     />
-                    {user.isActive && (
-                      <svg className="absolute left-2 top-1.5 w-4 h-4 text-[#0F0F0F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
                   </button>
                 </td>
               </tr>

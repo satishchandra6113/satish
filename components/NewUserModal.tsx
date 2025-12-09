@@ -220,15 +220,12 @@ export function NewUserModal({ onClose, onCreateUser }: NewUserModalProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#1A1A1A]">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-[#1A1A1A] flex items-center justify-center text-gray-400 border border-[#2A2A2A]">
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <div className="w-10 h-10 rounded-full bg-[#00FF66]/10 flex items-center justify-center text-[#00FF66] border border-[#00FF66]/20">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
               </svg>
             </div>
-            <div>
-              <div className="text-xs text-[#00FF66] font-medium uppercase tracking-wide">Users /</div>
-              <h2 className="text-xl font-normal text-[#D5FFD6]">New User</h2>
-            </div>
+            <h2 className="text-xl font-semibold text-[#D5FFD6]">Create User</h2>
           </div>
           <div className="flex items-center gap-3">
             <button

@@ -68,13 +68,10 @@ export function ImportUsersModal({ onClose }: ImportUsersModalProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A] bg-gradient-to-r from-[#0F0F0F] to-[#0A0A0A]">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-[#1A1A1A] flex items-center justify-center text-[#00FF66] border border-[#00FF66]/20">
+            <div className="w-10 h-10 rounded-full bg-[#00FF66]/10 flex items-center justify-center text-[#00FF66] border border-[#00FF66]/20">
               <Upload size={20} />
             </div>
-            <div>
-              <div className="text-xs text-[#00FF66] font-medium uppercase tracking-wide">Users /</div>
-              <h2 className="text-xl font-normal text-[#D5FFD6]">Import Users</h2>
-            </div>
+            <h2 className="text-xl font-semibold text-[#D5FFD6]">Import Users</h2>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-[#D5FFD6] transition-colors p-2 hover:bg-[#1A1A1A] rounded-lg">
             <X size={20} />
