@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { AlertTriangle, Shield, Bug, Wifi, Lock, Eye, CheckCircle, XCircle, Clock, Search, Filter, ChevronLeft, ChevronRight, MoreVertical, Globe, Monitor, Smartphone, AlertCircle, Zap, TrendingUp, TrendingDown } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { AlertTriangle, Shield, Bug, Wifi, Lock, Eye, CheckCircle, XCircle, Clock, Search, Filter, ChevronLeft, ChevronRight, MoreVertical, Globe, Monitor, Smartphone, AlertCircle, Zap, TrendingUp, TrendingDown, X } from 'lucide-react';
 
 const THEME = {
   primary: '#00FF66',
@@ -86,6 +86,10 @@ const getStatusIcon = (status: Threat['status']) => {
 
 export function ThreatsPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>(['Ransomware Attack Attempt', 'Phishing Email Campaign']);
+  const searchCloseTimerRef = useRef<number | null>(null);
   const [filterSeverity, setFilterSeverity] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
@@ -132,8 +136,8 @@ export function ThreatsPage() {
   // Filter threats
   const filteredThreats = threats.filter(threat => {
     const matchesSearch = threat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         threat.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         threat.source.toLowerCase().includes(searchQuery.toLowerCase());
+      threat.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      threat.source.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSeverity = filterSeverity === 'all' || threat.severity === filterSeverity;
     const matchesStatus = filterStatus === 'all' || threat.status === filterStatus;
     const matchesType = filterType === 'all' || threat.type === filterType;
@@ -172,8 +176,8 @@ export function ThreatsPage() {
         <button
           onClick={() => handleStatClick('total')}
           className="p-5 rounded-xl text-left transition-all hover:scale-[1.02]"
-          style={{ 
-            background: activeStatFilter === 'total' ? `${THEME.danger}20` : THEME.bgCard, 
+          style={{
+            background: activeStatFilter === 'total' ? `${THEME.danger}20` : THEME.bgCard,
             border: `1px solid ${activeStatFilter === 'total' ? THEME.danger : THEME.border}`,
             boxShadow: activeStatFilter === 'total' ? `0 0 20px ${THEME.danger}20` : 'none'
           }}
@@ -194,8 +198,8 @@ export function ThreatsPage() {
         <button
           onClick={() => handleStatClick('active')}
           className="p-5 rounded-xl text-left transition-all hover:scale-[1.02]"
-          style={{ 
-            background: activeStatFilter === 'active' ? `${THEME.danger}25` : `${THEME.danger}10`, 
+          style={{
+            background: activeStatFilter === 'active' ? `${THEME.danger}25` : `${THEME.danger}10`,
             border: `1px solid ${activeStatFilter === 'active' ? THEME.danger : THEME.danger + '30'}`,
             boxShadow: activeStatFilter === 'active' ? `0 0 25px ${THEME.danger}30` : 'none'
           }}
@@ -213,8 +217,8 @@ export function ThreatsPage() {
         <button
           onClick={() => handleStatClick('blocked')}
           className="p-5 rounded-xl text-left transition-all hover:scale-[1.02]"
-          style={{ 
-            background: activeStatFilter === 'blocked' ? `${THEME.primary}20` : `${THEME.primary}10`, 
+          style={{
+            background: activeStatFilter === 'blocked' ? `${THEME.primary}20` : `${THEME.primary}10`,
             border: `1px solid ${activeStatFilter === 'blocked' ? THEME.primary : THEME.primary + '30'}`,
             boxShadow: activeStatFilter === 'blocked' ? `0 0 20px ${THEME.primary}20` : 'none'
           }}
@@ -235,8 +239,8 @@ export function ThreatsPage() {
         <button
           onClick={() => handleStatClick('critical')}
           className="p-5 rounded-xl text-left transition-all hover:scale-[1.02]"
-          style={{ 
-            background: activeStatFilter === 'critical' ? `${THEME.critical}25` : `${THEME.critical}10`, 
+          style={{
+            background: activeStatFilter === 'critical' ? `${THEME.critical}25` : `${THEME.critical}10`,
             border: `1px solid ${activeStatFilter === 'critical' ? THEME.critical : THEME.critical + '30'}`,
             boxShadow: activeStatFilter === 'critical' ? `0 0 25px ${THEME.critical}30` : 'none'
           }}
@@ -256,16 +260,75 @@ export function ThreatsPage() {
       {/* Filters */}
       <div className="flex items-center gap-4 flex-wrap">
         {/* Search */}
-        <div className="flex-1 min-w-[300px] flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}` }}>
-          <Search size={18} style={{ color: THEME.textMuted }} />
-          <input
-            type="text"
-            placeholder="Search threats..."
-            value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); setActiveStatFilter(null); }}
-            className="flex-1 bg-transparent outline-none text-sm"
-            style={{ color: THEME.textPrimary }}
-          />
+        <div
+          className="flex-1 max-w-xl relative"
+          onMouseEnter={() => { if (searchCloseTimerRef.current) { window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = null; } }}
+          onMouseLeave={() => { if (searchCloseTimerRef.current) window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = window.setTimeout(() => { setShowSearch(false); setShowHistory(false); }, 200) as unknown as number; }}
+        >
+          <div
+            className="flex items-center gap-3 px-4 py-3 rounded-xl w-full"
+            style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}` }}
+          >
+            <Search size={18} style={{ color: THEME.textMuted }} />
+            <input
+              type="text"
+              placeholder="Search threats..."
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); setActiveStatFilter(null); setShowSearch(true); setShowHistory(false); }}
+              onFocus={() => { if (searchCloseTimerRef.current) { window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = null; } setShowSearch(true); }}
+              onBlur={() => { if (searchCloseTimerRef.current) window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = window.setTimeout(() => { setShowSearch(false); setShowHistory(false); }, 200) as unknown as number; }}
+              className="flex-1 bg-transparent outline-none text-sm"
+              style={{ color: THEME.textPrimary }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="p-1 rounded-full hover:bg-[rgba(255,255,255,0.1)] transition-colors"
+                style={{ color: THEME.textMuted }}
+              >
+                <X size={14} />
+              </button>
+            )}
+
+            <div className="relative">
+              <button
+                onClick={(e) => { e.stopPropagation(); if (searchCloseTimerRef.current) { window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = null; } setShowHistory(prev => !prev); setShowSearch(true); }}
+                className="p-1.5 rounded-lg transition-all duration-200 text-[#8F8F8F]"
+                title="Search history"
+              >
+                <Clock size={16} />
+              </button>
+
+              {recentSearches.length > 0 && !showHistory && !searchQuery && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#00FF66] rounded-full" />
+              )}
+            </div>
+          </div>
+
+          {showSearch && (searchQuery.trim() || showHistory) && (
+            <div className="absolute left-0 top-full mt-2 w-full bg-[#0A0A0A] border border-[#1A1A1A] rounded-xl shadow-2xl overflow-hidden z-[9999]">
+              {searchQuery.trim() ? (
+                <div className="p-2 max-h-48 overflow-y-auto">
+                  {threats.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.description.toLowerCase().includes(searchQuery.toLowerCase())).map(t => (
+                    <button key={t.id} onClick={() => { setSearchQuery(t.name); setShowSearch(false); setShowHistory(false); }} className="w-full text-left px-3 py-2 hover:bg-[#1A1A1A]">{t.name}</button>
+                  ))}
+                  {threats.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.description.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                    <div className="p-4 text-center text-[#8F8F8F]">No results</div>
+                  )}
+                </div>
+              ) : showHistory && recentSearches.length > 0 ? (
+                <div className="p-2">
+                  <div className="flex items-center justify-between px-3 py-2">
+                    <div className="flex items-center gap-2"><Clock size={14} className="text-[#00FF66]" /><p className="text-xs font-semibold text-[#8F8F8F] uppercase">Recent Searches</p></div>
+                    <button onClick={() => { setRecentSearches([]); setShowHistory(false); }} className="text-xs text-[#5A5A5A] hover:text-[#FF4444]">Clear all</button>
+                  </div>
+                  {recentSearches.map((s, idx) => (
+                    <button key={idx} onClick={() => { setSearchQuery(s); setShowHistory(false); setShowSearch(false); }} className="w-full text-left px-3 py-2 hover:bg-[#1A1A1A]">{s}</button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          )}
         </div>
 
         {/* Severity Filter */}
@@ -401,7 +464,7 @@ export function ThreatsPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4">
                     {/* Icon */}
-                    <div 
+                    <div
                       className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                       style={{ background: `${severityColor}15`, border: `1px solid ${severityColor}30` }}
                     >
@@ -412,13 +475,13 @@ export function ThreatsPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-1">
                         <h3 className="text-sm font-semibold text-white">{threat.name}</h3>
-                        <span 
+                        <span
                           className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
                           style={{ background: `${severityColor}20`, color: severityColor }}
                         >
                           {threat.severity}
                         </span>
-                        <span 
+                        <span
                           className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
                           style={{ background: `${statusColor}15`, color: statusColor }}
                         >
@@ -531,16 +594,16 @@ export function ThreatsPage() {
 
       {/* Threat Detail Modal */}
       {selectedThreat && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           onClick={() => setSelectedThreat(null)}
         >
-          <div 
+          <div
             className="bg-[#0A0A0A] rounded-xl w-full max-w-lg border border-[#1A1A1A] overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
-            <div 
+            <div
               className="p-4 border-b border-[#1A1A1A]"
               style={{ background: `${getSeverityColor(selectedThreat.severity)}10` }}
             >
@@ -555,7 +618,7 @@ export function ThreatsPage() {
                     <p className="text-xs" style={{ color: THEME.textMuted }}>Threat ID: #{selectedThreat.id}</p>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => setSelectedThreat(null)}
                   className="p-2 rounded-lg hover:bg-[#1A1A1A]"
                   style={{ color: THEME.textMuted }}
@@ -569,13 +632,13 @@ export function ThreatsPage() {
             <div className="p-4 space-y-4">
               {/* Status & Severity */}
               <div className="flex items-center gap-3">
-                <span 
+                <span
                   className="px-3 py-1 rounded-full text-xs font-bold uppercase"
                   style={{ background: `${getSeverityColor(selectedThreat.severity)}20`, color: getSeverityColor(selectedThreat.severity) }}
                 >
                   {selectedThreat.severity} Severity
                 </span>
-                <span 
+                <span
                   className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium"
                   style={{ background: `${getStatusColor(selectedThreat.status)}15`, color: getStatusColor(selectedThreat.status) }}
                 >

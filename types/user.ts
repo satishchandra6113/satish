@@ -7,4 +7,8 @@ export interface User {
     lastLogin: string;
     avatar?: string | null;
     isActive?: boolean;
+    phone?: string;
+    countryCode?: string;
+    department?: string;
+    customFields?: { id: number; label: string; value: string }[];
 }

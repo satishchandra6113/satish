@@ -67,6 +67,7 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
   const [recentSearches, setRecentSearches] = useState<string[]>(['Dashboard', 'Users', 'Devices', 'Security']);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchCloseTimerRef = useRef<number | null>(null);
 
   // Profile & Notifications state
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -82,7 +83,7 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
   const [language, setLanguage] = useState('English');
 
   // Mock data
-  const [notifications] = useState([
+  const [notifications, setNotifications] = useState([
     { id: 1, type: 'success', title: 'Device Approved', message: 'MacBook Pro has been approved.', time: '2 min ago', read: false },
     { id: 2, type: 'warning', title: 'Security Alert', message: 'Unusual login attempt detected.', time: '15 min ago', read: false },
     { id: 3, type: 'info', title: 'New User', message: 'John Doe joined the organization.', time: '1 hour ago', read: true },
@@ -95,6 +96,12 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
   ]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  // Open notifications and mark them read
+  const openNotifications = () => {
+    setShowNotifications(true);
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
 
   // Filter search results
   const filteredResults = searchQuery.trim()
@@ -213,7 +220,19 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
         {/* Right: Search + Icons + Profile */}
         <div className="flex items-center gap-[16px]">
           {/* Search Bar with Dropdown */}
-          <div className="relative" ref={searchRef}>
+          <div
+            className="relative"
+            ref={searchRef}
+            onMouseEnter={() => {
+              if (searchCloseTimerRef.current) { window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = null; }
+            }}
+            onMouseLeave={() => {
+              if (searchCloseTimerRef.current) window.clearTimeout(searchCloseTimerRef.current);
+              searchCloseTimerRef.current = window.setTimeout(() => {
+                if (searchInputRef.current !== document.activeElement) setShowHistory(false);
+              }, 200) as unknown as number;
+            }}
+          >
             <div 
               className={`hidden md:flex items-center gap-[8px] rounded-[12px] px-[16px] py-[10px] min-w-[320px] cursor-text transition-all duration-300 ${
                 showSearch 
@@ -233,7 +252,7 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                 placeholder="Search pages, users, devices..."
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setShowHistory(false); }}
-                onFocus={() => { setShowSearch(true); setShowHistory(false); }}
+                onFocus={() => { setShowSearch(true); setShowHistory(false); if (searchCloseTimerRef.current) { window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = null; } }}
                 onKeyDown={handleSearchKeyDown}
                 className="bg-transparent border-none outline-none text-[14px] text-[#D5FFD6] placeholder:text-[#8F8F8F] w-full"
               />
@@ -249,6 +268,7 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
+                    if (searchCloseTimerRef.current) { window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = null; }
                     setShowHistory(!showHistory);
                     setShowSearch(true);
                   }}
@@ -380,11 +400,11 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
           <div 
             className="relative" 
             ref={notificationRef}
-            onMouseEnter={() => setShowNotifications(true)}
+            onMouseEnter={() => openNotifications()}
             onMouseLeave={() => setShowNotifications(false)}
           >
             <button 
-              onClick={() => setShowNotifications(true)}
+              onClick={() => openNotifications()}
               className={`relative p-[10px] rounded-[10px] border transition-all ${
                 showNotifications 
                   ? 'bg-[rgba(0,255,102,0.1)] border-[#00FF66] text-[#00FF66]' 

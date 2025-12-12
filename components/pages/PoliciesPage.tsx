@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { FileCheck, Shield, Lock, Eye, Users, Clock, CheckCircle, XCircle, AlertTriangle, Search, Filter, Plus, MoreVertical, X } from 'lucide-react';
 
 const THEME = {
@@ -77,6 +77,10 @@ const getStatusColor = (status: string) => {
 
 export function PoliciesPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>(['Multi-Factor Authentication', 'Device Encryption', 'Password Complexity']);
+  const searchCloseTimerRef = useRef<number | null>(null);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [filterType, setFilterType] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
@@ -84,18 +88,18 @@ export function PoliciesPage() {
   // Filter policies based on search and filters
   const filteredPolicies = policies.filter(policy => {
     // Search filter
-    const matchesSearch = searchQuery === '' || 
+    const matchesSearch = searchQuery === '' ||
       policy.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       policy.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       policy.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
       policy.createdBy.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     // Type filter
     const matchesType = filterType === null || policy.type === filterType;
-    
+
     // Status filter
     const matchesStatus = filterStatus === null || policy.status === filterStatus;
-    
+
     return matchesSearch && matchesType && matchesStatus;
   });
 
@@ -156,44 +160,90 @@ export function PoliciesPage() {
       {/* Search and Filter */}
       <div className="flex items-center gap-4">
         <div
-          className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl"
-          style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}` }}
+          className="flex-1 max-w-xl relative"
+          onMouseEnter={() => { if (searchCloseTimerRef.current) { window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = null; } }}
+          onMouseLeave={() => { if (searchCloseTimerRef.current) window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = window.setTimeout(() => { setShowSearch(false); setShowHistory(false); }, 200) as unknown as number; }}
         >
-          <Search size={18} style={{ color: THEME.textMuted }} />
-          <input
-            type="text"
-            placeholder="Search policies by name, description, type..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 bg-transparent outline-none text-sm"
-            style={{ color: THEME.textPrimary }}
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="p-1 rounded-full hover:bg-[rgba(255,255,255,0.1)] transition-colors"
-              style={{ color: THEME.textMuted }}
-            >
-              <X size={14} />
-            </button>
+          <div
+            className="flex items-center gap-3 px-4 py-3 rounded-xl w-full"
+            style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}` }}
+          >
+            <Search size={18} style={{ color: THEME.textMuted }} />
+            <input
+              type="text"
+              placeholder="Search policies by name, description, type..."
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setShowSearch(true); setShowHistory(false); }}
+              onFocus={() => { if (searchCloseTimerRef.current) { window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = null; } setShowSearch(true); }}
+              onBlur={() => { if (searchCloseTimerRef.current) window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = window.setTimeout(() => { setShowSearch(false); setShowHistory(false); }, 200) as unknown as number; }}
+              className="flex-1 bg-transparent outline-none text-sm"
+              style={{ color: THEME.textPrimary }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="p-1 rounded-full hover:bg-[rgba(255,255,255,0.1)] transition-colors"
+                style={{ color: THEME.textMuted }}
+              >
+                <X size={14} />
+              </button>
+            )}
+
+            <div className="relative">
+              <button
+                onClick={(e) => { e.stopPropagation(); if (searchCloseTimerRef.current) { window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = null; } setShowHistory(prev => !prev); setShowSearch(true); }}
+                className="p-1.5 rounded-lg transition-all duration-200 text-[#8F8F8F]"
+                title="Search history"
+              >
+                <Clock size={16} />
+              </button>
+
+              {recentSearches.length > 0 && !showHistory && !searchQuery && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#00FF66] rounded-full" />
+              )}
+            </div>
+          </div>
+
+          {showSearch && (searchQuery.trim() || showHistory) && (
+            <div className="absolute left-0 top-full mt-2 w-full bg-[#0A0A0A] border border-[#1A1A1A] rounded-xl shadow-2xl overflow-hidden z-[9999]">
+              {searchQuery.trim() ? (
+                <div className="p-2 max-h-48 overflow-y-auto">
+                  {policies.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase())).map(p => (
+                    <button key={p.id} onClick={() => { setSearchQuery(p.name); setShowSearch(false); setShowHistory(false); }} className="w-full text-left px-3 py-2 hover:bg-[#1A1A1A]">{p.name}</button>
+                  ))}
+                  {policies.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                    <div className="p-4 text-center text-[#8F8F8F]">No results</div>
+                  )}
+                </div>
+              ) : showHistory && recentSearches.length > 0 ? (
+                <div className="p-2">
+                  <div className="flex items-center justify-between px-3 py-2">
+                    <div className="flex items-center gap-2"><Clock size={14} className="text-[#00FF66]" /><p className="text-xs font-semibold text-[#8F8F8F] uppercase">Recent Searches</p></div>
+                    <button onClick={() => { setRecentSearches([]); setShowHistory(false); }} className="text-xs text-[#5A5A5A] hover:text-[#FF4444]">Clear all</button>
+                  </div>
+                  {recentSearches.map((s, idx) => (
+                    <button key={idx} onClick={() => { setSearchQuery(s); setShowHistory(false); setShowSearch(false); }} className="w-full text-left px-3 py-2 hover:bg-[#1A1A1A]">{s}</button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           )}
         </div>
         <div className="relative">
           <button
             onClick={() => setShowFilterMenu(!showFilterMenu)}
-            className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all hover:bg-opacity-80 ${
-              (filterType || filterStatus) ? 'border-[#00FF66]' : ''
-            }`}
-            style={{ 
-              background: THEME.bgCard, 
-              border: `1px solid ${(filterType || filterStatus) ? THEME.primary : THEME.border}`, 
-              color: (filterType || filterStatus) ? THEME.primary : THEME.textMuted 
+            className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all hover:bg-opacity-80 ${(filterType || filterStatus) ? 'border-[#00FF66]' : ''
+              }`}
+            style={{
+              background: THEME.bgCard,
+              border: `1px solid ${(filterType || filterStatus) ? THEME.primary : THEME.border}`,
+              color: (filterType || filterStatus) ? THEME.primary : THEME.textMuted
             }}
           >
             <Filter size={18} />
             <span className="text-sm">Filter</span>
             {(filterType || filterStatus) && (
-              <span 
+              <span
                 className="w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center"
                 style={{ background: THEME.primary, color: THEME.bgDark }}
               >
@@ -234,7 +284,7 @@ export function PoliciesPage() {
                         key={type}
                         onClick={() => setFilterType(isSelected ? null : type)}
                         className="px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all"
-                        style={{ 
+                        style={{
                           background: isSelected ? `${color}20` : 'rgba(255,255,255,0.05)',
                           border: `1px solid ${isSelected ? color : THEME.border}`,
                           color: isSelected ? color : THEME.textMuted
@@ -259,7 +309,7 @@ export function PoliciesPage() {
                         key={status}
                         onClick={() => setFilterStatus(isSelected ? null : status)}
                         className="px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all"
-                        style={{ 
+                        style={{
                           background: isSelected ? `${color}20` : 'rgba(255,255,255,0.05)',
                           border: `1px solid ${isSelected ? color : THEME.border}`,
                           color: isSelected ? color : THEME.textMuted
@@ -292,7 +342,7 @@ export function PoliciesPage() {
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs" style={{ color: THEME.textMuted }}>Active filters:</span>
           {searchQuery && (
-            <span 
+            <span
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs"
               style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${THEME.border}`, color: THEME.textPrimary }}
             >
@@ -301,7 +351,7 @@ export function PoliciesPage() {
             </span>
           )}
           {filterType && (
-            <span 
+            <span
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs capitalize"
               style={{ background: `${getTypeColor(filterType)}15`, border: `1px solid ${getTypeColor(filterType)}30`, color: getTypeColor(filterType) }}
             >
@@ -310,7 +360,7 @@ export function PoliciesPage() {
             </span>
           )}
           {filterStatus && (
-            <span 
+            <span
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs capitalize"
               style={{ background: `${getStatusColor(filterStatus)}15`, border: `1px solid ${getStatusColor(filterStatus)}30`, color: getStatusColor(filterStatus) }}
             >

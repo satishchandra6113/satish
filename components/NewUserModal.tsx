@@ -92,18 +92,18 @@ export function NewUserModal({ onClose, onCreateUser }: NewUserModalProps) {
   }>({ show: false, type: 'delete', fieldId: null, fieldLabel: '' });
 
   const selectedCountry = COUNTRY_CODES.find(c => c.code === formData.countryCode) || COUNTRY_CODES[0];
-  
-  const filteredCountries = countrySearch 
-    ? COUNTRY_CODES.filter(country => 
-        country.country.toLowerCase().includes(countrySearch.toLowerCase()) ||
-        country.code.includes(countrySearch.replace('+', '')) ||
-        country.code.includes(countrySearch)
-      )
+
+  const filteredCountries = countrySearch
+    ? COUNTRY_CODES.filter(country =>
+      country.country.toLowerCase().includes(countrySearch.toLowerCase()) ||
+      country.code.includes(countrySearch.replace('+', '')) ||
+      country.code.includes(countrySearch)
+    )
     : COUNTRY_CODES;
 
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
-    
+
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'First name is required';
     }
@@ -115,14 +115,14 @@ export function NewUserModal({ onClose, onCreateUser }: NewUserModalProps) {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -134,7 +134,11 @@ export function NewUserModal({ onClose, onCreateUser }: NewUserModalProps) {
       roles: formData.role.trim() ? [formData.role.trim()] : ['User'],
       status: 'Pending',
       lastLogin: 'Never logged in',
-      avatar: null
+      avatar: null,
+      phone: formData.phone,
+      countryCode: formData.countryCode,
+      department: formData.department,
+      customFields: customFields.filter(f => f.label && f.value)
     };
 
     onCreateUser(newUser);
@@ -274,9 +278,8 @@ export function NewUserModal({ onClose, onCreateUser }: NewUserModalProps) {
                       handleChange('firstName', e.target.value);
                       if (errors.firstName) setErrors(prev => ({ ...prev, firstName: '' }));
                     }}
-                    className={`w-full bg-[#1A1A1A] border rounded-sm px-3 py-2 text-white focus:outline-none transition-all placeholder-gray-600 ${
-                      errors.firstName ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-[#333] focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66]'
-                    }`}
+                    className={`w-full bg-[#1A1A1A] border rounded-sm px-3 py-2 text-white focus:outline-none transition-all placeholder-gray-600 ${errors.firstName ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-[#333] focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66]'
+                      }`}
                   />
                   {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
                 </div>
@@ -290,9 +293,8 @@ export function NewUserModal({ onClose, onCreateUser }: NewUserModalProps) {
                       handleChange('lastName', e.target.value);
                       if (errors.lastName) setErrors(prev => ({ ...prev, lastName: '' }));
                     }}
-                    className={`w-full bg-[#1A1A1A] border rounded-sm px-3 py-2 text-white focus:outline-none transition-all placeholder-gray-600 ${
-                      errors.lastName ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-[#333] focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66]'
-                    }`}
+                    className={`w-full bg-[#1A1A1A] border rounded-sm px-3 py-2 text-white focus:outline-none transition-all placeholder-gray-600 ${errors.lastName ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-[#333] focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66]'
+                      }`}
                   />
                   {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
                 </div>
@@ -306,9 +308,8 @@ export function NewUserModal({ onClose, onCreateUser }: NewUserModalProps) {
                       handleChange('email', e.target.value);
                       if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
                     }}
-                    className={`w-full bg-[#1A1A1A] border rounded-sm px-3 py-2 text-white focus:outline-none transition-all placeholder-gray-600 ${
-                      errors.email ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-[#333] focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66]'
-                    }`}
+                    className={`w-full bg-[#1A1A1A] border rounded-sm px-3 py-2 text-white focus:outline-none transition-all placeholder-gray-600 ${errors.email ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-[#333] focus:border-[#00FF66] focus:ring-1 focus:ring-[#00FF66]'
+                      }`}
                   />
                   {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                 </div>
@@ -327,10 +328,10 @@ export function NewUserModal({ onClose, onCreateUser }: NewUserModalProps) {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                       </button>
-                      
+
                       {/* Dropdown Panel */}
                       {showCountryDropdown && (
-                        <div 
+                        <div
                           className="absolute top-full left-0 mt-1 w-[180px] bg-[#1A1A1A] border border-[#333] rounded-lg shadow-2xl z-50 overflow-hidden"
                           onKeyDown={(e) => {
                             if (e.key === 'Backspace') {
@@ -372,9 +373,8 @@ export function NewUserModal({ onClose, onCreateUser }: NewUserModalProps) {
                                   setShowCountryDropdown(false);
                                   setCountrySearch('');
                                 }}
-                                className={`w-full px-3 py-2 text-left text-sm hover:bg-[#00FF66]/10 transition-colors ${
-                                  formData.countryCode === country.code ? 'bg-[#00FF66]/20 text-[#00FF66]' : 'text-white'
-                                }`}
+                                className={`w-full px-3 py-2 text-left text-sm hover:bg-[#00FF66]/10 transition-colors ${formData.countryCode === country.code ? 'bg-[#00FF66]/20 text-[#00FF66]' : 'text-white'
+                                  }`}
                               >
                                 {country.country}
                               </button>
@@ -386,7 +386,7 @@ export function NewUserModal({ onClose, onCreateUser }: NewUserModalProps) {
                         </div>
                       )}
                     </div>
-                    
+
                     <input
                       type="tel"
                       placeholder={`${selectedCountry.digits} digits`}
@@ -504,22 +504,22 @@ export function NewUserModal({ onClose, onCreateUser }: NewUserModalProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
-              
+
               {/* Title */}
               <h3 className="text-lg font-semibold text-white mb-2">
                 {confirmDialog.type === 'delete' ? 'Delete Field?' : 'Modify Field?'}
               </h3>
-              
+
               {/* Message */}
               <p className="text-gray-400 text-sm mb-4">
-                {confirmDialog.type === 'delete' 
+                {confirmDialog.type === 'delete'
                   ? `Are you sure you want to delete "${confirmDialog.fieldLabel}"?`
                   : `Are you sure you want to modify "${confirmDialog.fieldLabel}"?`
                 }
               </p>
 
               <p className="text-gray-500 text-xs mb-6">Press Enter to confirm, Escape to cancel</p>
-              
+
               {/* Buttons */}
               <div className="flex gap-3">
                 <button
@@ -533,11 +533,10 @@ export function NewUserModal({ onClose, onCreateUser }: NewUserModalProps) {
                   type="button"
                   onClick={handleConfirmAction}
                   autoFocus
-                  className={`flex-1 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
-                    confirmDialog.type === 'delete'
+                  className={`flex-1 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${confirmDialog.type === 'delete'
                       ? 'bg-[#FF4444] text-white hover:bg-[#FF5555]'
                       : 'bg-[#00FF66] text-[#0F0F0F] hover:bg-[#00CC52]'
-                  }`}
+                    }`}
                 >
                   {confirmDialog.type === 'delete' ? 'Delete (Enter)' : 'Modify (Enter)'}
                 </button>

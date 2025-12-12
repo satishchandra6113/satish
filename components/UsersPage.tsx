@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react';
-import { Search, Filter, X, Users, Shield, Clock, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import { useState, useMemo, useRef } from 'react';
+import { Search, UserPlus, Filter, Download, MoreVertical, Shield, Mail, Phone, MapPin, Calendar, Clock, CheckCircle, XCircle, AlertTriangle, ChevronDown, ChevronUp, RefreshCw, Trash2, Edit, Copy, Eye, Lock, Globe, Server, Activity, ArrowUpRight, ArrowDownRight, Zap, X, Users, AlertCircle } from 'lucide-react';
 import { Button } from './Button';
 import { Dropdown } from './Dropdown';
 import { UserTable } from './UserTable';
 import { ImportUsersModal } from './ImportUsersModal';
 import { NewUserModal } from './NewUserModal';
+import { UserDetailsModal } from './UserDetailsModal';
 import { User } from '../types/user';
 
 const mockUsers: User[] = [
@@ -468,12 +469,42 @@ export function UsersPage() {
   const [users, setUsers] = useState<User[]>(mockUsers);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showNewUserModal, setShowNewUserModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  // Handlers for UserDetailsModal
+  const handleUserClick = (user: User) => {
+    setSelectedUser(user);
+    setShowSearch(false); // Close search results if open
+  };
+
+  const handleUpdateUser = (updatedUser: User) => {
+    setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
+    setSelectedUser(updatedUser);
+  };
+
+  const handleDeleteUser = (userId: string) => {
+    setUsers(prev => prev.filter(u => u.id !== userId));
+    setSelectedUser(null);
+  };
+
+  const handleToggleActive = (userId: string) => {
+    setUsers(prev => prev.map(user =>
+      user.id === userId ? { ...user, isActive: !user.isActive } : user
+    ));
+    if (selectedUser && selectedUser.id === userId) {
+      setSelectedUser(prev => prev ? { ...prev, isActive: !prev.isActive } : null);
+    }
+  };
+
   const [filterRole, setFilterRole] = useState<FilterRole>('all');
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [showFilters, setShowFilters] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  // follow header behavior: separate search visibility and history toggle
+  const [showSearch, setShowSearch] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>(['Admin', 'Engineers', 'Pending']);
+  const searchCloseTimerRef = useRef<number | null>(null);
 
   // Filter users based on search and filters
   const filteredUsers = useMemo(() => {
@@ -507,21 +538,21 @@ export function UsersPage() {
     if (!searchQuery.trim() || searchQuery.length < 2) return [];
     const query = searchQuery.toLowerCase();
     const suggestions: { type: 'user' | 'role' | 'email'; value: string; label: string }[] = [];
-    
+
     // User name suggestions
     users.forEach(user => {
       if (user.name.toLowerCase().includes(query) && suggestions.length < 5) {
         suggestions.push({ type: 'user', value: user.name, label: user.name });
       }
     });
-    
+
     // Role suggestions
     ['Admin', 'Engineers', 'Sales', 'Customer Success'].forEach(role => {
       if (role.toLowerCase().includes(query) && !suggestions.find(s => s.value === role)) {
         suggestions.push({ type: 'role', value: role, label: role });
       }
     });
-    
+
     // Email suggestions
     users.forEach(user => {
       if (user.email.toLowerCase().includes(query) && suggestions.length < 8) {
@@ -530,14 +561,15 @@ export function UsersPage() {
         }
       }
     });
-    
+
     return suggestions.slice(0, 6);
   }, [searchQuery, users]);
 
   // Handle search selection
   const handleSearchSelect = (value: string) => {
     setSearchQuery(value);
-    setShowSearchDropdown(false);
+    setShowSearch(false);
+    setShowHistory(false);
     // Add to recent searches
     setRecentSearches(prev => {
       const filtered = prev.filter(s => s !== value);
@@ -548,6 +580,7 @@ export function UsersPage() {
   // Clear recent searches
   const clearRecentSearches = () => {
     setRecentSearches([]);
+    setShowHistory(false);
   };
 
   // Stats
@@ -604,13 +637,28 @@ export function UsersPage() {
         {/* Search and Filter Bar */}
         <div className="flex items-center gap-4">
           {/* Enhanced Search Input with History Icon */}
-          <div className="flex-1 max-w-xl relative">
-            <div 
-              className={`flex items-center gap-3 bg-[#0F0F0F] border rounded-xl px-4 py-3 transition-all duration-300 ${
-                isSearchFocused 
-                  ? 'border-[#00FF66] shadow-[0_0_20px_rgba(0,255,102,0.15)]' 
-                  : 'border-[#1A1A1A] hover:border-[#2A2A2A]'
-              }`}
+          <div
+            className="flex-1 max-w-xl relative"
+            onMouseEnter={() => { if (searchCloseTimerRef.current) { window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = null; } }}
+            onMouseLeave={() => {
+              if (searchCloseTimerRef.current) window.clearTimeout(searchCloseTimerRef.current);
+              searchCloseTimerRef.current = window.setTimeout(() => {
+                if (!isSearchFocused) setShowSearch(false);
+              }, 200) as unknown as number;
+            }}
+          >
+            <div
+              className={`flex items-center gap-3 bg-[#0F0F0F] border rounded-xl px-4 py-3 transition-all duration-300 ${isSearchFocused
+                ? 'border-[#00FF66] shadow-[0_0_20px_rgba(0,255,102,0.15)]'
+                : 'border-[#1A1A1A] hover:border-[#2A2A2A]'
+                }`}
+              onMouseEnter={() => { if (searchCloseTimerRef.current) { window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = null; } }}
+              onMouseLeave={() => {
+                if (searchCloseTimerRef.current) window.clearTimeout(searchCloseTimerRef.current);
+                searchCloseTimerRef.current = window.setTimeout(() => {
+                  if (!isSearchFocused) setShowSearch(false);
+                }, 200) as unknown as number;
+              }}
             >
               <Search size={18} className={`transition-colors ${isSearchFocused ? 'text-[#00FF66]' : 'text-[#8F8F8F]'}`} />
               <input
@@ -619,18 +667,21 @@ export function UsersPage() {
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
-                  setShowSearchDropdown(true);
+                  setShowSearch(true);
+                  setShowHistory(false);
                 }}
                 onFocus={() => {
                   setIsSearchFocused(true);
-                  if (searchQuery) setShowSearchDropdown(true);
+                  if (searchCloseTimerRef.current) { window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = null; }
+                  if (searchQuery) setShowSearch(true);
                 }}
                 onBlur={() => {
                   setIsSearchFocused(false);
-                  setTimeout(() => setShowSearchDropdown(false), 200);
+                  if (searchCloseTimerRef.current) window.clearTimeout(searchCloseTimerRef.current);
+                  searchCloseTimerRef.current = window.setTimeout(() => setShowSearch(false), 200) as unknown as number;
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Escape') setShowSearchDropdown(false);
+                  if (e.key === 'Escape') setShowSearch(false);
                   if (e.key === 'Enter' && searchQuery.trim()) handleSearchSelect(searchQuery.trim());
                 }}
                 className="flex-1 bg-transparent outline-none text-sm text-[#D5FFD6] placeholder:text-[#5A5A5A]"
@@ -646,24 +697,28 @@ export function UsersPage() {
               {/* History Icon */}
               <div className="relative">
                 <button
-                  onClick={() => setShowSearchDropdown(!showSearchDropdown)}
-                  className={`p-1.5 rounded-lg transition-all duration-200 ${
-                    showSearchDropdown && !searchQuery
-                      ? 'bg-[#00FF66] text-[#050505]' 
-                      : 'text-[#5A5A5A] hover:text-[#00FF66] hover:bg-[#1A1A1A]'
-                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (searchCloseTimerRef.current) { window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = null; }
+                    setShowHistory(prev => !prev);
+                    setShowSearch(true);
+                  }}
+                  className={`p-1.5 rounded-lg transition-all duration-200 ${showHistory && !searchQuery
+                    ? 'bg-[#00FF66] text-[#050505]'
+                    : 'text-[#5A5A5A] hover:text-[#00FF66] hover:bg-[#1A1A1A]'
+                    }`}
                   title="Search history"
                 >
                   <Clock size={16} />
                 </button>
-                {recentSearches.length > 0 && !showSearchDropdown && (
+                {recentSearches.length > 0 && !showHistory && !searchQuery && (
                   <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#00FF66] rounded-full" />
                 )}
               </div>
             </div>
 
             {/* Search Dropdown */}
-            {showSearchDropdown && (
+            {showSearch && (searchQuery.trim() || showHistory) && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-[#0A0A0A] border border-[#1A1A1A] rounded-xl shadow-2xl overflow-hidden z-50" style={{ animation: 'fadeInDown 0.2s ease-out' }}>
                 {/* Suggestions when typing */}
                 {searchQuery && searchSuggestions.length > 0 && (
@@ -746,11 +801,10 @@ export function UsersPage() {
           {/* Filter Button */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 ${
-              showFilters || hasActiveFilters
-                ? 'bg-[rgba(0,255,102,0.1)] border-[#00FF66] text-[#00FF66]'
-                : 'bg-[#0F0F0F] border-[#1A1A1A] text-[#8F8F8F] hover:border-[#2A2A2A]'
-            } border`}
+            className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 ${showFilters || hasActiveFilters
+              ? 'bg-[rgba(0,255,102,0.1)] border-[#00FF66] text-[#00FF66]'
+              : 'bg-[#0F0F0F] border-[#1A1A1A] text-[#8F8F8F] hover:border-[#2A2A2A]'
+              } border`}
           >
             <Filter size={18} />
             <span className="text-sm font-medium">Filters</span>
@@ -762,7 +816,7 @@ export function UsersPage() {
 
         {/* Filter Panel */}
         {showFilters && (
-          <div 
+          <div
             className="mt-4 p-4 bg-[#0F0F0F] border border-[#1A1A1A] rounded-xl"
             style={{ animation: 'fadeIn 0.2s ease-out' }}
           >
@@ -775,11 +829,10 @@ export function UsersPage() {
                     <button
                       key={role}
                       onClick={() => setFilterRole(role)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-                        filterRole === role
-                          ? 'bg-[#00FF66] text-[#050505]'
-                          : 'bg-[#1A1A1A] text-[#8F8F8F] hover:bg-[#2A2A2A]'
-                      }`}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${filterRole === role
+                        ? 'bg-[#00FF66] text-[#050505]'
+                        : 'bg-[#1A1A1A] text-[#8F8F8F] hover:bg-[#2A2A2A]'
+                        }`}
                     >
                       {role === 'all' ? 'All Roles' : role}
                     </button>
@@ -800,11 +853,10 @@ export function UsersPage() {
                     <button
                       key={status.value}
                       onClick={() => setFilterStatus(status.value as FilterStatus)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-                        filterStatus === status.value
-                          ? 'bg-[#00FF66] text-[#050505]'
-                          : 'bg-[#1A1A1A] text-[#8F8F8F] hover:bg-[#2A2A2A]'
-                      }`}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${filterStatus === status.value
+                        ? 'bg-[#00FF66] text-[#050505]'
+                        : 'bg-[#1A1A1A] text-[#8F8F8F] hover:bg-[#2A2A2A]'
+                        }`}
                     >
                       <status.icon size={14} style={{ color: filterStatus === status.value ? '#050505' : status.color }} />
                       {status.label}
@@ -842,9 +894,13 @@ export function UsersPage() {
         )}
       </div>
 
-      <UserTable users={filteredUsers} />
-
-      <style>{`
+      <div className="p-6">
+        <UserTable
+          users={filteredUsers}
+          onUserClick={handleUserClick}
+          onToggleActive={handleToggleActive}
+        />
+      </div><style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(-10px); }
           to { opacity: 1; transform: translateY(0); }
@@ -856,9 +912,19 @@ export function UsersPage() {
       `}</style>
 
       {showNewUserModal && (
-        <NewUserModal 
-          onClose={() => setShowNewUserModal(false)} 
+        <NewUserModal
+          onClose={() => setShowNewUserModal(false)}
           onCreateUser={handleCreateUser}
+        />
+      )}
+
+      {/* User Details Modal */}
+      {selectedUser && (
+        <UserDetailsModal
+          user={selectedUser}
+          onClose={() => setSelectedUser(null)}
+          onUpdate={handleUpdateUser}
+          onDelete={handleDeleteUser}
         />
       )}
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Monitor, Laptop, Smartphone, Tablet, Wifi, WifiOff, MapPin, Search, Filter, MoreVertical, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, Plus, Edit, Trash2, RefreshCw, Download, Shield, Battery, BatteryLow, BatteryMedium, BatteryFull, BatteryCharging, Clock, Globe, Cpu, HardDrive, Check, AlertTriangle, Eye, Power, Lock, Unlock, Activity } from 'lucide-react';
 
 const THEME = {
@@ -102,6 +102,10 @@ const ITEMS_PER_PAGE_OPTIONS = [5, 10, 15, 20];
 export function DevicesPage() {
   const [devices, setDevices] = useState<Device[]>(initialDevices);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>(['MacBook Pro', 'iPhone 15 Pro', 'Windows Desktop']);
+  const searchCloseTimerRef = useRef<number | null>(null);
   const [sortColumn, setSortColumn] = useState<SortColumn>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -146,7 +150,7 @@ export function DevicesPage() {
   // Get devices based on search and sorting
   const getFilteredDevices = () => {
     let filtered = devices;
-    
+
     // Apply category filter (computers, mobiles, compliant)
     if (filterCategory === 'computers') {
       filtered = filtered.filter(d => d.type === 'laptop' || d.type === 'desktop');
@@ -155,7 +159,7 @@ export function DevicesPage() {
     } else if (filterCategory === 'compliant') {
       filtered = filtered.filter(d => d.isCompliant === true);
     }
-    
+
     // Apply type filter (only if no category filter is active)
     if (filterType !== 'all' && filterCategory === 'all') {
       filtered = filtered.filter(d => d.type === filterType);
@@ -168,7 +172,7 @@ export function DevicesPage() {
 
     // Apply search
     if (searchQuery) {
-      filtered = filtered.filter(d => 
+      filtered = filtered.filter(d =>
         d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         d.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
         d.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -303,7 +307,7 @@ export function DevicesPage() {
 
   // Refresh device status
   const handleRefreshDevice = (id: number) => {
-    setDevices(devices.map(d => 
+    setDevices(devices.map(d =>
       d.id === id ? { ...d, lastSeen: 'Just now', status: 'online' } : d
     ));
     showSuccessMessage('Device status refreshed!');
@@ -357,7 +361,7 @@ export function DevicesPage() {
               More Actions
             </button>
             {showMoreActions && (
-              <div 
+              <div
                 className="absolute right-0 top-full mt-2 w-48 rounded-xl overflow-hidden z-50"
                 style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}` }}
               >
@@ -400,13 +404,13 @@ export function DevicesPage() {
           { label: 'Online Now', value: stats.online, icon: Wifi, color: THEME.online, filter: 'online' as const },
           { label: 'Compliant', value: stats.compliant, icon: Shield, color: THEME.warning, filter: 'compliant' as const },
         ].map((stat) => {
-          const isActive = 
+          const isActive =
             (stat.filter === 'all' && filterCategory === 'all' && filterStatus === 'all') ||
             (stat.filter === 'computers' && filterCategory === 'computers') ||
             (stat.filter === 'mobiles' && filterCategory === 'mobiles') ||
             (stat.filter === 'online' && filterStatus === 'online' && filterCategory === 'all') ||
             (stat.filter === 'compliant' && filterCategory === 'compliant');
-          
+
           return (
             <button
               key={stat.label}
@@ -434,11 +438,10 @@ export function DevicesPage() {
                 }
                 setCurrentPage(1);
               }}
-              className={`p-4 rounded-xl transition-all hover:scale-[1.02] cursor-pointer text-left ${
-                isActive ? 'ring-2 ring-offset-2 ring-offset-[#050505]' : ''
-              }`}
-              style={{ 
-                background: isActive ? `${stat.color}15` : THEME.bgCard, 
+              className={`p-4 rounded-xl transition-all hover:scale-[1.02] cursor-pointer text-left ${isActive ? 'ring-2 ring-offset-2 ring-offset-[#050505]' : ''
+                }`}
+              style={{
+                background: isActive ? `${stat.color}15` : THEME.bgCard,
                 border: `1px solid ${isActive ? stat.color : THEME.border}`,
                 ringColor: stat.color
               }}
@@ -459,25 +462,83 @@ export function DevicesPage() {
       {/* Search and Filter */}
       <div className="flex items-center gap-4">
         <div
-          className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl"
-          style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}` }}
+          className="flex-1 max-w-xl relative"
+          onMouseEnter={() => { if (searchCloseTimerRef.current) { window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = null; } }}
+          onMouseLeave={() => {
+            if (searchCloseTimerRef.current) window.clearTimeout(searchCloseTimerRef.current);
+            searchCloseTimerRef.current = window.setTimeout(() => { setShowSearch(false); setShowHistory(false); }, 200) as unknown as number;
+          }}
         >
-          <Search size={18} style={{ color: THEME.textMuted }} />
-          <input
-            type="text"
-            placeholder="Search devices by name, user, location, OS, or IP..."
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="flex-1 bg-transparent outline-none text-sm"
-            style={{ color: THEME.textPrimary }}
-          />
+          <div
+            className="flex items-center gap-3 px-4 py-3 rounded-xl w-full"
+            style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}` }}
+          >
+            <Search size={18} style={{ color: THEME.textMuted }} />
+            <input
+              type="text"
+              placeholder="Search devices by name, user, location, OS, or IP..."
+              value={searchQuery}
+              onChange={(e) => { handleSearchChange(e.target.value); setShowSearch(true); setShowHistory(false); }}
+              onFocus={() => { if (searchCloseTimerRef.current) { window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = null; } setShowSearch(true); }}
+              onBlur={() => { if (searchCloseTimerRef.current) window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = window.setTimeout(() => { setShowSearch(false); setShowHistory(false); }, 200) as unknown as number; }}
+              className="flex-1 bg-transparent outline-none text-sm"
+              style={{ color: THEME.textPrimary }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="p-1 rounded-full hover:bg-[rgba(255,255,255,0.1)] transition-colors"
+                style={{ color: THEME.textMuted }}
+              >
+                <X size={14} />
+              </button>
+            )}
+
+            <div className="relative">
+              <button
+                onClick={(e) => { e.stopPropagation(); if (searchCloseTimerRef.current) { window.clearTimeout(searchCloseTimerRef.current); searchCloseTimerRef.current = null; } setShowHistory(prev => !prev); setShowSearch(true); }}
+                className="p-1.5 rounded-lg transition-all duration-200 text-[#8F8F8F]"
+                title="Search history"
+              >
+                <Clock size={16} />
+              </button>
+              {recentSearches.length > 0 && !showHistory && !searchQuery && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#00FF66] rounded-full" />
+              )}
+            </div>
+          </div>
+          {showSearch && (searchQuery.trim() || showHistory) && (
+            <div className="absolute left-0 top-full mt-2 w-full bg-[#0A0A0A] border border-[#1A1A1A] rounded-xl shadow-2xl overflow-hidden z-[9999]">
+              {searchQuery.trim() ? (
+                <div className="p-2 max-h-48 overflow-y-auto">
+                  {devices.filter(d => d.name.toLowerCase().includes(searchQuery.toLowerCase()) || d.user.toLowerCase().includes(searchQuery.toLowerCase())).map(d => (
+                    <button key={d.id} onClick={() => { setSearchQuery(d.name); setShowSearch(false); setShowHistory(false); }} className="w-full text-left px-3 py-2 hover:bg-[#1A1A1A]">
+                      {d.name} • {d.user}
+                    </button>
+                  ))}
+                  {devices.filter(d => d.name.toLowerCase().includes(searchQuery.toLowerCase()) || d.user.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                    <div className="p-4 text-center text-[#8F8F8F]">No results</div>
+                  )}
+                </div>
+              ) : showHistory && recentSearches.length > 0 ? (
+                <div className="p-2">
+                  <div className="flex items-center justify-between px-3 py-2">
+                    <div className="flex items-center gap-2"><Clock size={14} className="text-[#00FF66]" /><p className="text-xs font-semibold text-[#8F8F8F] uppercase">Recent Searches</p></div>
+                    <button onClick={() => { setRecentSearches([]); setShowHistory(false); }} className="text-xs text-[#5A5A5A] hover:text-[#FF4444]">Clear all</button>
+                  </div>
+                  {recentSearches.map((s, idx) => (
+                    <button key={idx} onClick={() => { setSearchQuery(s); setShowHistory(false); setShowSearch(false); }} className="w-full text-left px-3 py-2 hover:bg-[#1A1A1A]">{s}</button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          )}
         </div>
         <div className="relative">
           <button
             onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-            className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all ${
-              filterType !== 'all' || filterStatus !== 'all' || filterCategory !== 'all' ? 'ring-1 ring-[#00FF66]' : ''
-            }`}
+            className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all ${filterType !== 'all' || filterStatus !== 'all' || filterCategory !== 'all' ? 'ring-1 ring-[#00FF66]' : ''
+              }`}
             style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}`, color: THEME.textMuted }}
           >
             <Filter size={18} />
@@ -487,7 +548,7 @@ export function DevicesPage() {
             )}
           </button>
           {showFilterDropdown && (
-            <div 
+            <div
               className="absolute right-0 top-full mt-2 w-64 p-4 rounded-xl z-50"
               style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}` }}
             >
@@ -506,9 +567,8 @@ export function DevicesPage() {
                     <button
                       key={type}
                       onClick={() => { setFilterType(type); setFilterCategory('all'); setCurrentPage(1); }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                        filterType === type && filterCategory === 'all' ? 'bg-[#00FF66] text-[#050505]' : 'bg-[#1A1A1A] text-[#8F8F8F] hover:bg-[#2A2A2A]'
-                      }`}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterType === type && filterCategory === 'all' ? 'bg-[#00FF66] text-[#050505]' : 'bg-[#1A1A1A] text-[#8F8F8F] hover:bg-[#2A2A2A]'
+                        }`}
                     >
                       {type.charAt(0).toUpperCase() + type.slice(1)}
                     </button>
@@ -522,9 +582,8 @@ export function DevicesPage() {
                     <button
                       key={status}
                       onClick={() => { setFilterStatus(status); setCurrentPage(1); }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                        filterStatus === status ? 'bg-[#00FF66] text-[#050505]' : 'bg-[#1A1A1A] text-[#8F8F8F] hover:bg-[#2A2A2A]'
-                      }`}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterStatus === status ? 'bg-[#00FF66] text-[#050505]' : 'bg-[#1A1A1A] text-[#8F8F8F] hover:bg-[#2A2A2A]'
+                        }`}
                     >
                       {status.charAt(0).toUpperCase() + status.slice(1)}
                     </button>
@@ -566,16 +625,15 @@ export function DevicesPage() {
             <button
               key={header.label || 'actions'}
               onClick={() => header.key && handleSort(header.key as SortColumn)}
-              className={`flex items-center gap-1 text-xs font-medium uppercase tracking-wider transition-colors ${
-                header.key ? 'cursor-pointer hover:text-[#00FF66]' : 'cursor-default'
-              }`}
+              className={`flex items-center gap-1 text-xs font-medium uppercase tracking-wider transition-colors ${header.key ? 'cursor-pointer hover:text-[#00FF66]' : 'cursor-default'
+                }`}
               style={{ color: sortColumn === header.key ? THEME.primary : THEME.textMuted }}
               disabled={!header.key}
             >
               {header.label}
               {header.key && sortColumn === header.key && (
-                sortDirection === 'asc' 
-                  ? <ChevronUp size={14} /> 
+                sortDirection === 'asc'
+                  ? <ChevronUp size={14} />
                   : <ChevronDown size={14} />
               )}
             </button>
@@ -658,7 +716,7 @@ export function DevicesPage() {
                     <MoreVertical size={16} />
                   </button>
                   {showActionsMenu === device.id && (
-                    <div 
+                    <div
                       className="absolute right-0 top-full mt-1 w-44 rounded-xl overflow-hidden z-50"
                       style={{ background: THEME.bgCard, border: `1px solid ${THEME.border}` }}
                       onClick={(e) => e.stopPropagation()}
@@ -723,8 +781,8 @@ export function DevicesPage() {
                   value={itemsPerPage}
                   onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
                   className="px-2 py-1.5 rounded text-xs outline-none cursor-pointer appearance-none pr-6 bg-no-repeat"
-                  style={{ 
-                    background: `${THEME.bgCard} url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238F8F8F' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 6px center`, 
+                  style={{
+                    background: `${THEME.bgCard} url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238F8F8F' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 6px center`,
                     color: THEME.textPrimary,
                     border: `1px solid ${THEME.border}`
                   }}
@@ -747,7 +805,7 @@ export function DevicesPage() {
                 onClick={() => setCurrentPage(1)}
                 disabled={currentPage === 1}
                 className="w-8 h-8 flex items-center justify-center rounded-l border-r-0 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[rgba(0,255,102,0.1)]"
-                style={{ 
+                style={{
                   border: `1px solid ${THEME.border}`,
                   color: currentPage === 1 ? THEME.textMuted : THEME.textPrimary
                 }}
@@ -759,7 +817,7 @@ export function DevicesPage() {
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
                 className="w-8 h-8 flex items-center justify-center border-r-0 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[rgba(0,255,102,0.1)]"
-                style={{ 
+                style={{
                   border: `1px solid ${THEME.border}`,
                   color: currentPage === 1 ? THEME.textMuted : THEME.textPrimary
                 }}
@@ -779,13 +837,13 @@ export function DevicesPage() {
                 } else {
                   pages.push(1);
                   if (showEllipsisStart) pages.push('...');
-                  
+
                   const start = Math.max(2, currentPage - 1);
                   const end = Math.min(totalPages - 1, currentPage + 1);
                   for (let i = start; i <= end; i++) {
                     if (!pages.includes(i)) pages.push(i);
                   }
-                  
+
                   if (showEllipsisEnd) pages.push('...');
                   if (!pages.includes(totalPages)) pages.push(totalPages);
                 }
@@ -795,7 +853,7 @@ export function DevicesPage() {
                     <span
                       key={`ellipsis-${idx}`}
                       className="w-8 h-8 flex items-center justify-center text-xs border-r-0"
-                      style={{ 
+                      style={{
                         border: `1px solid ${THEME.border}`,
                         color: THEME.textMuted,
                         background: THEME.bgCard
@@ -808,7 +866,7 @@ export function DevicesPage() {
                       key={page}
                       onClick={() => setCurrentPage(page as number)}
                       className="w-8 h-8 flex items-center justify-center text-xs font-medium border-r-0 transition-all hover:bg-[rgba(0,255,102,0.1)]"
-                      style={{ 
+                      style={{
                         border: `1px solid ${currentPage === page ? THEME.primary : THEME.border}`,
                         background: currentPage === page ? `${THEME.primary}15` : 'transparent',
                         color: currentPage === page ? THEME.primary : THEME.textMuted
@@ -825,7 +883,7 @@ export function DevicesPage() {
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
                 className="w-8 h-8 flex items-center justify-center border-r-0 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[rgba(0,255,102,0.1)]"
-                style={{ 
+                style={{
                   border: `1px solid ${THEME.border}`,
                   color: currentPage === totalPages ? THEME.textMuted : THEME.textPrimary
                 }}
@@ -837,7 +895,7 @@ export function DevicesPage() {
                 onClick={() => setCurrentPage(totalPages)}
                 disabled={currentPage === totalPages}
                 className="w-8 h-8 flex items-center justify-center rounded-r transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[rgba(0,255,102,0.1)]"
-                style={{ 
+                style={{
                   border: `1px solid ${THEME.border}`,
                   color: currentPage === totalPages ? THEME.textMuted : THEME.textPrimary
                 }}
@@ -853,7 +911,7 @@ export function DevicesPage() {
       {/* Add Device Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowAddModal(false)}>
-          <div 
+          <div
             className="bg-[#0A0A0A] rounded-2xl w-full max-w-lg border border-[#1A1A1A] shadow-2xl overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
@@ -868,7 +926,7 @@ export function DevicesPage() {
                   <p className="text-xs text-[#8F8F8F]">Register a new device to the system</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setShowAddModal(false)}
                 className="p-2 rounded-lg text-[#8F8F8F] hover:bg-[#1A1A1A] hover:text-white transition-all"
               >
@@ -900,11 +958,10 @@ export function DevicesPage() {
                       <button
                         key={type}
                         onClick={() => setNewDevice({ ...newDevice, type })}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${
-                          newDevice.type === type
-                            ? 'bg-[#00FF66]/10 border-[#00FF66] text-[#00FF66]'
-                            : 'bg-[#0F0F0F] border-[#1A1A1A] text-[#8F8F8F] hover:border-[#2A2A2A]'
-                        }`}
+                        className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${newDevice.type === type
+                          ? 'bg-[#00FF66]/10 border-[#00FF66] text-[#00FF66]'
+                          : 'bg-[#0F0F0F] border-[#1A1A1A] text-[#8F8F8F] hover:border-[#2A2A2A]'
+                          }`}
                       >
                         <Icon size={20} />
                         <span className="text-xs capitalize">{type}</span>
@@ -1011,18 +1068,18 @@ export function DevicesPage() {
       {/* Device Details Modal */}
       {showDetailsModal && selectedDevice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowDetailsModal(false)}>
-          <div 
+          <div
             className="bg-[#0A0A0A] rounded-2xl w-full max-w-2xl border border-[#1A1A1A] shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
             onClick={e => e.stopPropagation()}
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between p-5 border-b border-[#1A1A1A] bg-gradient-to-r from-[rgba(0,255,102,0.1)] to-transparent">
               <div className="flex items-center gap-4">
-                <div 
+                <div
                   className="w-14 h-14 rounded-xl flex items-center justify-center"
-                  style={{ 
-                    background: `${getStatusColor(selectedDevice.status)}15`, 
-                    border: `1px solid ${getStatusColor(selectedDevice.status)}30` 
+                  style={{
+                    background: `${getStatusColor(selectedDevice.status)}15`,
+                    border: `1px solid ${getStatusColor(selectedDevice.status)}30`
                   }}
                 >
                   {(() => { const Icon = getDeviceIcon(selectedDevice.type); return <Icon size={28} style={{ color: getStatusColor(selectedDevice.status) }} />; })()}
@@ -1039,7 +1096,7 @@ export function DevicesPage() {
                   </div>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setShowDetailsModal(false)}
                 className="p-2 rounded-lg text-[#8F8F8F] hover:bg-[#1A1A1A] hover:text-white transition-all"
               >
@@ -1166,8 +1223,8 @@ export function DevicesPage() {
 
       {/* Click outside to close dropdowns */}
       {(showActionsMenu || showFilterDropdown || showMoreActions) && (
-        <div 
-          className="fixed inset-0 z-40" 
+        <div
+          className="fixed inset-0 z-40"
           onClick={() => { setShowActionsMenu(null); setShowFilterDropdown(false); setShowMoreActions(false); }}
         />
       )}
