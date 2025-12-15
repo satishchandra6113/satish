@@ -12,7 +12,7 @@ interface EnhancedHorizontalBarChartProps {
 // Icon mapping for common websites
 const getSiteIcon = (name: string) => {
   const lowerName = name.toLowerCase();
-  
+
   if (lowerName.includes('github')) {
     return <Code size={16} className="text-[#00FF66]" />;
   }
@@ -28,7 +28,7 @@ const getSiteIcon = (name: string) => {
   if (lowerName.includes('docker')) {
     return <Box size={16} className="text-[#00FF66]" />;
   }
-  
+
   return <Globe size={16} className="text-[#00FF66]" />;
 };
 
@@ -42,7 +42,7 @@ export function EnhancedHorizontalBarChart({
 }: EnhancedHorizontalBarChartProps) {
   // Calculate max value if not provided
   const calculatedMax = maxValue || Math.max(...data.map(d => d.value));
-  
+
   // Format number with K/M suffix
   const formatNumber = (num: number): string => {
     if (num >= 1000) {
@@ -69,54 +69,50 @@ export function EnhancedHorizontalBarChart({
           )}
         </div>
       )}
-      
+
       <div className="flex-1 w-full space-y-[16px] overflow-y-auto">
         {data.map((item, index) => {
           const percentage = (item.value / calculatedMax) * 100;
           const isTopItem = index === 0;
-          
+
           return (
             <div key={index} className="relative group p-[12px] rounded-[10px] border border-transparent hover:border-[#00FF66] transition-all duration-300 hover:bg-[rgba(0,255,102,0.02)]">
               {/* Item Label and Icon */}
               <div className="flex items-center justify-between mb-[8px]">
                 <div className="flex items-center gap-[10px] flex-1 min-w-0">
                   {showIcons && (
-                    <div className={`flex-shrink-0 p-[6px] rounded-[6px] bg-[rgba(0,255,102,0.1)] border border-[rgba(0,255,102,0.3)] transition-all duration-300 group-hover:border-[#00FF66] group-hover:bg-[rgba(0,255,102,0.15)] ${
-                      isTopItem ? 'border-[#00FF66]' : ''
-                    }`}>
+                    <div className={`flex-shrink-0 p-[6px] rounded-[6px] bg-[rgba(0,255,102,0.1)] border border-[rgba(0,255,102,0.3)] transition-all duration-300 group-hover:border-[#00FF66] group-hover:bg-[rgba(0,255,102,0.15)] ${isTopItem ? 'border-[#00FF66]' : ''
+                      }`}>
                       {getIcon(item.name, index)}
                     </div>
                   )}
-                  <span className={`text-[13px] font-medium text-[#D5FFD6] truncate transition-colors duration-300 group-hover:text-[#00FF66] ${
-                    isTopItem ? 'text-[#00FF66]' : ''
-                  }`}>
+                  <span className={`text-[13px] font-medium text-[#D5FFD6] truncate transition-colors duration-300 group-hover:text-[#00FF66] ${isTopItem ? 'text-[#00FF66]' : ''
+                    }`}>
                     {item.name}
                   </span>
                 </div>
-                <span className={`text-[14px] font-bold ml-[12px] flex-shrink-0 transition-colors duration-300 group-hover:text-[#00FF66] ${
-                  isTopItem ? 'text-[#00FF66]' : 'text-[#D5FFD6]'
-                }`}>
+                <span className={`text-[14px] font-bold ml-[12px] flex-shrink-0 transition-colors duration-300 group-hover:text-[#00FF66] ${isTopItem ? 'text-[#00FF66]' : 'text-[#D5FFD6]'
+                  }`}>
                   {formatNumber(item.value)}
                 </span>
               </div>
-              
+
               {/* Bar Container */}
               <div className="relative h-[32px] bg-[#0A0A0A] rounded-[8px] border border-[#1A1A1A] overflow-hidden transition-all duration-300 group-hover:border-[rgba(0,255,102,0.4)]">
                 {/* Animated Bar */}
                 <div
-                  className={`absolute left-0 top-0 h-full rounded-[8px] transition-all duration-700 ease-out ${
-                    isTopItem ? 'bg-gradient-to-r from-[#00FF66] to-[#00CC52]' : 
-                    'bg-gradient-to-r from-[rgba(0,255,102,0.8)] to-[rgba(0,204,82,0.6)]'
-                  }`}
+                  className={`absolute left-0 top-0 h-full rounded-[8px] transition-all duration-700 ease-out ${isTopItem ? 'bg-gradient-to-r from-[#00FF66] to-[#00CC52]' :
+                      'bg-gradient-to-r from-[rgba(0,255,102,0.8)] to-[rgba(0,204,82,0.6)]'
+                    }`}
                   style={{
                     width: `${percentage}%`,
-                    boxShadow: isTopItem 
-                      ? '0 0 12px rgba(0, 255, 102, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)' 
+                    boxShadow: isTopItem
+                      ? '0 0 12px rgba(0, 255, 102, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
                       : 'inset 0 1px 0 rgba(255, 255, 255, 0.05)'
                   }}
                 >
                   {/* Shine effect */}
-                  <div 
+                  <div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 transition-opacity duration-500"
                     style={{
                       backgroundSize: '200% 100%',
@@ -124,7 +120,7 @@ export function EnhancedHorizontalBarChart({
                     }}
                   />
                 </div>
-                
+
                 {/* Percentage indicator on bar */}
                 {percentage > 15 && (
                   <div className="absolute left-[8px] top-1/2 -translate-y-1/2">
@@ -134,7 +130,7 @@ export function EnhancedHorizontalBarChart({
                   </div>
                 )}
               </div>
-              
+
               {/* Hover effect overlay */}
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 <div className="absolute right-0 top-0 h-full w-[2px] bg-[#00FF66] blur-[4px]" />
@@ -143,7 +139,7 @@ export function EnhancedHorizontalBarChart({
           );
         })}
       </div>
-      
+
       {/* Legend/Footer */}
       <div className="mt-[16px] pt-[16px] border-t border-[#1A1A1A] flex-shrink-0">
         <div className="flex items-center justify-between text-[11px] text-[#8F8F8F]">

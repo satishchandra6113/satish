@@ -70,9 +70,9 @@ export function UserTable({ users: initialUsers, onUserClick, onToggleActive }: 
             <tr className="border-b border-[#1A1A1A]">
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">User (Name & Email)</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Roles / Groups</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Last Login</th>
-              <th className="px-6 py-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Online Status</th>
+              <th className="px-6 py-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
               <th className="px-6 py-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Active / Inactive</th>
             </tr>
           </thead>
@@ -107,11 +107,7 @@ export function UserTable({ users: initialUsers, onUserClick, onToggleActive }: 
                     ))}
                   </div>
                 </td>
-                <td className="px-6 py-4">
-                  <span className="text-[#00FF66] text-sm font-medium">
-                    {user.status}
-                  </span>
-                </td>
+
                 <td className="px-6 py-4">
                   <span className="text-gray-400 text-sm">
                     {user.lastLogin}

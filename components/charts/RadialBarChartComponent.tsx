@@ -16,7 +16,7 @@ interface RadialBarChartComponentProps {
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
-    
+
     return (
       <div className="bg-[#1A1A1A] border border-[#00FF66] rounded-[8px] p-[12px] shadow-lg">
         <p className="text-[#00FF66] font-semibold text-[14px] mb-[4px]">{data.name}</p>
@@ -29,7 +29,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 export function RadialBarChartComponent({ data, title }: RadialBarChartComponentProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  
+
   return (
     <div className="w-full h-full flex flex-col">
       {title && (
@@ -57,7 +57,7 @@ export function RadialBarChartComponent({ data, title }: RadialBarChartComponent
                 setActiveIndex(index);
               }}
               onMouseLeave={() => setActiveIndex(null)}
-              isAnimationActive={false}
+
             >
               {data.map((entry, index) => (
                 <Cell
@@ -68,18 +68,19 @@ export function RadialBarChartComponent({ data, title }: RadialBarChartComponent
                     opacity: activeIndex === null ? 1 : activeIndex === index ? 1 : 0.3,
                     filter: activeIndex === index ? 'brightness(1.2)' : 'none',
                     transition: 'opacity 0.2s, filter 0.2s',
+                    outline: 'none',
                   }}
                 />
               ))}
             </RadialBar>
-            <Tooltip 
+            <Tooltip
               content={<CustomTooltip />}
               cursor={false}
             />
           </RadialBarChart>
         </ResponsiveContainer>
       </div>
-      
+
       {/* Legend */}
       <div className="flex flex-wrap gap-[12px] mt-[16px] justify-center flex-shrink-0">
         {data.map((item, index) => {

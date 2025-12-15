@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 interface PieChartProps {
@@ -14,6 +15,7 @@ const DEFAULT_COLORS = ['#00FF66', '#0099FF', '#FFCC00', '#FF4444', '#8F8F8F', '
 export function PieChart({ data, dataKey, nameKey, height = 300, colors = DEFAULT_COLORS, innerRadius = 0 }: PieChartProps) {
   // Calculate total for percentage display
   const total = data.reduce((sum, item) => sum + item[dataKey], 0);
+  const [tooltipActive, setTooltipActive] = useState(false);
   
   return (
     <ResponsiveContainer width="100%" height={height}>
@@ -29,6 +31,8 @@ export function PieChart({ data, dataKey, nameKey, height = 300, colors = DEFAUL
           fill="#8884d8"
           dataKey={dataKey}
           nameKey={nameKey}
+          onMouseEnter={() => setTooltipActive(true)}
+          onMouseLeave={() => setTooltipActive(false)}
         >
           {data.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
@@ -46,6 +50,10 @@ export function PieChart({ data, dataKey, nameKey, height = 300, colors = DEFAUL
             const percent = ((value / total) * 100).toFixed(1);
             return [`${value.toLocaleString()} (${percent}%)`, ''];
           }}
+          isAnimationActive={false}
+          animationDuration={0}
+          cursor={false}
+          active={tooltipActive}
         />
         <Legend 
           wrapperStyle={{ color: '#8F8F8F', fontSize: '12px' }}

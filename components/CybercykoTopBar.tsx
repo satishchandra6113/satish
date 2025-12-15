@@ -106,9 +106,9 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
   // Filter search results
   const filteredResults = searchQuery.trim()
     ? searchableItems.filter(item =>
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase())
-      ).slice(0, 8)
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase())
+    ).slice(0, 8)
     : [];
 
   // Group results by category
@@ -233,12 +233,11 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
               }, 200) as unknown as number;
             }}
           >
-            <div 
-              className={`hidden md:flex items-center gap-[8px] rounded-[12px] px-[16px] py-[10px] min-w-[320px] cursor-text transition-all duration-300 ${
-                showSearch 
-                  ? 'bg-[rgba(0,255,102,0.05)] border border-[#00FF66]/50 shadow-[0_0_20px_rgba(0,255,102,0.15)] min-w-[400px]' 
-                  : 'bg-[rgba(255,255,255,0.05)] border border-[#1A1A1A] hover:border-[#2A2A2A]'
-              }`}
+            <div
+              className={`hidden md:flex items-center gap-[8px] rounded-[12px] px-[16px] py-[10px] min-w-[320px] cursor-text transition-all duration-300 ${showSearch
+                ? 'bg-[rgba(0,255,102,0.05)] border border-[#00FF66]/50 shadow-[0_0_20px_rgba(0,255,102,0.15)] min-w-[400px]'
+                : 'bg-[rgba(255,255,255,0.05)] border border-[#1A1A1A] hover:border-[#2A2A2A]'
+                }`}
               onClick={() => {
                 setShowSearch(true);
                 setShowHistory(false);
@@ -272,11 +271,10 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                     setShowHistory(!showHistory);
                     setShowSearch(true);
                   }}
-                  className={`p-[6px] rounded-[6px] transition-all ${
-                    showHistory 
-                      ? 'bg-[rgba(0,255,102,0.15)] text-[#00FF66]' 
-                      : 'text-[#5A5A5A] hover:bg-[#1A1A1A] hover:text-[#8F8F8F]'
-                  }`}
+                  className={`p-[6px] rounded-[6px] transition-all ${showHistory
+                    ? 'bg-[rgba(0,255,102,0.15)] text-[#00FF66]'
+                    : 'text-[#5A5A5A] hover:bg-[#1A1A1A] hover:text-[#8F8F8F]'
+                    }`}
                   title="Search History"
                 >
                   <History size={14} />
@@ -290,7 +288,7 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
 
             {/* Search Dropdown */}
             {showSearch && (searchQuery.trim() || showHistory) && (
-              <div 
+              <div
                 className="absolute left-0 top-full mt-[8px] w-[420px] bg-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden z-50"
                 style={{ animation: 'fadeInDown 0.2s ease-out' }}
               >
@@ -313,13 +311,11 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                               <button
                                 key={result.id}
                                 onClick={() => handleSearchSelect(result)}
-                                className={`w-full flex items-center gap-[12px] px-[16px] py-[12px] text-left transition-all ${
-                                  isSelected ? 'bg-[rgba(0,255,102,0.1)]' : 'hover:bg-[rgba(255,255,255,0.03)]'
-                                }`}
+                                className={`w-full flex items-center gap-[12px] px-[16px] py-[12px] text-left transition-all ${isSelected ? 'bg-[rgba(0,255,102,0.1)]' : 'hover:bg-[rgba(255,255,255,0.03)]'
+                                  }`}
                               >
-                                <div className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center flex-shrink-0 transition-all ${
-                                  isSelected ? 'bg-[rgba(0,255,102,0.15)]' : 'bg-[#1A1A1A]'
-                                }`}>
+                                <div className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center flex-shrink-0 transition-all ${isSelected ? 'bg-[rgba(0,255,102,0.15)]' : 'bg-[#1A1A1A]'
+                                  }`}>
                                   <Icon size={18} className={isSelected ? 'text-[#00FF66]' : 'text-[#8F8F8F]'} />
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -349,7 +345,7 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                         <Clock size={12} />
                         Recent Searches
                       </p>
-                      <button 
+                      <button
                         onClick={clearRecentSearches}
                         className="text-[10px] text-[#5A5A5A] hover:text-[#FF4444] transition-colors flex items-center gap-[4px]"
                       >
@@ -397,19 +393,18 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
           </div>
 
           {/* Notification Icon with Dropdown */}
-          <div 
-            className="relative" 
+          <div
+            className="relative"
             ref={notificationRef}
             onMouseEnter={() => openNotifications()}
             onMouseLeave={() => setShowNotifications(false)}
           >
-            <button 
+            <button
               onClick={() => openNotifications()}
-              className={`relative p-[10px] rounded-[10px] border transition-all ${
-                showNotifications 
-                  ? 'bg-[rgba(0,255,102,0.1)] border-[#00FF66] text-[#00FF66]' 
-                  : 'bg-[rgba(255,255,255,0.05)] border-[#1A1A1A] text-[#8F8F8F] hover:bg-[rgba(0,255,102,0.1)] hover:border-[#00FF66] hover:text-[#00FF66]'
-              }`}
+              className={`relative p-[10px] rounded-[10px] border transition-all ${showNotifications
+                ? 'bg-[rgba(0,255,102,0.1)] border-[#00FF66] text-[#00FF66]'
+                : 'bg-[rgba(255,255,255,0.05)] border-[#1A1A1A] text-[#8F8F8F] hover:bg-[rgba(0,255,102,0.1)] hover:border-[#00FF66] hover:text-[#00FF66]'
+                }`}
             >
               <Bell size={20} />
               {unreadCount > 0 && (
@@ -422,8 +417,8 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
             {showNotifications && (
               <>
                 <div className="absolute right-0 top-full h-[8px] w-[300px]" />
-                <div 
-                  className="absolute right-0 top-full mt-[8px] w-[300px] bg-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden z-50"
+                <div
+                  className="absolute right-0 top-full mt-[8px] w-[300px] bg-[#0A0A0A] border border-[#00FF66] rounded-[16px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden z-50"
                   style={{ animation: 'fadeInDown 0.2s ease-out' }}
                 >
                   <div className="p-[16px] border-b border-[#1A1A1A] bg-gradient-to-r from-[rgba(0,255,102,0.1)] to-transparent">
@@ -438,11 +433,10 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                   </div>
                   <div className="max-h-[300px] overflow-y-auto">
                     {notifications.map((notif) => (
-                      <div 
+                      <div
                         key={notif.id}
-                        className={`px-[16px] py-[12px] border-l-2 hover:bg-[rgba(255,255,255,0.02)] transition-all cursor-pointer ${
-                          notif.read ? 'border-transparent' : 'border-[#00FF66]'
-                        }`}
+                        className={`px-[16px] py-[12px] border-l-2 hover:bg-[rgba(255,255,255,0.02)] transition-all cursor-pointer ${notif.read ? 'border-transparent' : 'border-[#00FF66]'
+                          }`}
                       >
                         <p className={`text-[13px] font-medium ${notif.read ? 'text-[#8F8F8F]' : 'text-[#D5FFD6]'}`}>
                           {notif.title}
@@ -463,25 +457,23 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
           </div>
 
           {/* User Profile with Enhanced Dropdown */}
-          <div 
+          <div
             className="relative"
             ref={profileRef}
             onMouseEnter={() => setShowProfileMenu(true)}
             onMouseLeave={() => setShowProfileMenu(false)}
           >
-            <div 
-              className={`flex items-center gap-[12px] pl-[16px] border-l border-[#1A1A1A] cursor-pointer transition-all ${
-                showProfileMenu ? 'opacity-100' : 'hover:opacity-80'
-              }`}
+            <div
+              className={`flex items-center gap-[12px] pl-[16px] border-l border-[#1A1A1A] cursor-pointer transition-all ${showProfileMenu ? 'opacity-100' : 'hover:opacity-80'
+                }`}
             >
               <div className="text-right hidden sm:block">
                 <p className={`text-[12px] font-medium transition-colors ${showProfileMenu ? 'text-[#00FF66]' : 'text-[#D5FFD6]'}`}>Admin User</p>
                 <p className="text-[10px] text-[#8F8F8F]">Admin@cybercyko.com</p>
               </div>
               <div className="relative">
-                <div className={`w-[40px] h-[40px] rounded-[12px] bg-gradient-to-br from-[#00FF66] to-[#00CC52] flex items-center justify-center border-2 transition-all ${
-                  showProfileMenu ? 'border-[#00FF66] scale-105' : 'border-[#1A1A1A]'
-                }`}>
+                <div className={`w-[40px] h-[40px] rounded-[12px] bg-gradient-to-br from-[#00FF66] to-[#00CC52] flex items-center justify-center border-2 transition-all ${showProfileMenu ? 'border-[#00FF66] scale-105' : 'border-[#1A1A1A]'
+                  }`}>
                   <User size={20} className="text-[#050505]" />
                 </div>
                 {/* Online indicator */}
@@ -494,8 +486,8 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
             {showProfileMenu && (
               <>
                 <div className="absolute right-0 top-full h-[8px] w-[300px]" />
-                <div 
-                  className="absolute right-0 top-full mt-[8px] w-[300px] bg-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden max-h-[80vh] overflow-y-auto z-50"
+                <div
+                  className="absolute right-0 top-full mt-[8px] w-[300px] bg-[#0A0A0A] border border-[#00FF66] rounded-[16px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden max-h-[80vh] overflow-y-auto z-50"
                   style={{ animation: 'fadeInDown 0.2s ease-out' }}
                 >
                   {/* Profile Header */}
@@ -549,13 +541,11 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                       </div>
                       <button
                         onClick={() => setIsDarkMode(!isDarkMode)}
-                        className={`relative w-[40px] h-[22px] rounded-full transition-all ${
-                          isDarkMode ? 'bg-[#00FF66]' : 'bg-[#2A2A2A]'
-                        }`}
+                        className={`relative w-[40px] h-[22px] rounded-full transition-all ${isDarkMode ? 'bg-[#00FF66]' : 'bg-[#2A2A2A]'
+                          }`}
                       >
-                        <div className={`absolute top-[3px] w-[16px] h-[16px] rounded-full bg-white shadow transition-transform ${
-                          isDarkMode ? 'translate-x-[21px]' : 'translate-x-[3px]'
-                        }`} />
+                        <div className={`absolute top-[3px] w-[16px] h-[16px] rounded-full bg-white shadow transition-transform ${isDarkMode ? 'translate-x-[21px]' : 'translate-x-[3px]'
+                          }`} />
                       </button>
                     </div>
                   </div>
@@ -566,8 +556,8 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                       { icon: Key, label: 'Security', badge: twoFactorEnabled ? '2FA' : null, badgeColor: '#00FF66', action: () => openAdminModal('security') },
                       { icon: Smartphone, label: 'Sessions', badge: `${sessions.length}`, badgeColor: '#60A5FA', action: () => openAdminModal('sessions') },
                       { icon: Globe, label: 'Language', value: language, action: () => openAdminModal('preferences') },
-                      { icon: Download, label: 'Download Data', action: () => {} },
-                      { icon: HelpCircle, label: 'Help', external: true, action: () => {} },
+                      { icon: Download, label: 'Download Data', action: () => { } },
+                      { icon: HelpCircle, label: 'Help', external: true, action: () => { } },
                     ].map((item) => (
                       <button
                         key={item.label}
@@ -629,7 +619,7 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
       {/* Admin Modal - Using Portal to render outside sticky container */}
       {showAdminModal && createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-6" onClick={() => setShowAdminModal(false)}>
-          <div 
+          <div
             className="bg-[#0A0A0A] rounded-[20px] w-full max-w-[480px] border border-[#1A1A1A] shadow-2xl overflow-hidden max-h-[80vh] flex flex-col"
             onClick={e => e.stopPropagation()}
             style={{ animation: 'fadeInUp 0.2s ease-out' }}
@@ -645,7 +635,7 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                   <p className="text-[12px] text-[#8F8F8F]">Manage your account</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setShowAdminModal(false)}
                 className="p-[8px] rounded-[8px] text-[#8F8F8F] hover:bg-[#1A1A1A] hover:text-white transition-all"
               >
@@ -664,11 +654,10 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                 <button
                   key={tab.id}
                   onClick={() => setAdminModalTab(tab.id)}
-                  className={`flex items-center gap-[6px] px-[16px] py-[14px] text-[13px] font-medium border-b-2 transition-all ${
-                    adminModalTab === tab.id
-                      ? 'text-[#00FF66] border-[#00FF66]'
-                      : 'text-[#8F8F8F] border-transparent hover:text-white'
-                  }`}
+                  className={`flex items-center gap-[6px] px-[16px] py-[14px] text-[13px] font-medium border-b-2 transition-all ${adminModalTab === tab.id
+                    ? 'text-[#00FF66] border-[#00FF66]'
+                    : 'text-[#8F8F8F] border-transparent hover:text-white'
+                    }`}
                 >
                   <tab.icon size={14} />
                   {tab.label}
@@ -750,7 +739,7 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
               {adminModalTab === 'sessions' && (
                 <div className="space-y-[12px]">
                   {sessions.map((session) => (
-                    <div 
+                    <div
                       key={session.id}
                       className={`p-[14px] rounded-[12px] border ${session.current ? 'bg-[rgba(0,255,102,0.05)] border-[#00FF66]/30' : 'bg-[#0F0F0F] border-[#1A1A1A]'}`}
                     >
@@ -792,11 +781,10 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                         <button
                           key={lang}
                           onClick={() => setLanguage(lang)}
-                          className={`px-[12px] py-[10px] rounded-[8px] text-[12px] font-medium transition-all ${
-                            language === lang
-                              ? 'bg-[#00FF66] text-[#050505]'
-                              : 'bg-[#0F0F0F] border border-[#1A1A1A] text-[#8F8F8F] hover:border-[#2A2A2A]'
-                          }`}
+                          className={`px-[12px] py-[10px] rounded-[8px] text-[12px] font-medium transition-all ${language === lang
+                            ? 'bg-[#00FF66] text-[#050505]'
+                            : 'bg-[#0F0F0F] border border-[#1A1A1A] text-[#8F8F8F] hover:border-[#2A2A2A]'
+                            }`}
                         >
                           {lang}
                         </button>

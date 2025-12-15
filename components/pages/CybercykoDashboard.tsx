@@ -1,12 +1,12 @@
-import { Users, Monitor, Activity, Shield, MapPin, AlertTriangle, Globe, CheckCircle, Clock, Wifi } from 'lucide-react';
+import { Users, Monitor, Activity, Shield, AlertTriangle, CheckCircle } from 'lucide-react';
 import { EnhancedPieChart } from '../charts/EnhancedPieChart';
 import { RadialBarChartComponent } from '../charts/RadialBarChartComponent';
-import { StackedAreaChart } from '../charts/StackedAreaChart';
+
+
 import { WaffleChart } from '../charts/WaffleChart';
 import { EnhancedHorizontalBarChart } from '../charts/EnhancedHorizontalBarChart';
 import { EnhancedSSOAppsChart } from '../charts/EnhancedSSOAppsChart';
-import { BarChart } from '../charts/BarChart';
-import { EnhancedDonutChart } from '../charts/EnhancedDonutChart';
+
 import { EnhancedActiveUsersChart } from '../charts/EnhancedActiveUsersChart';
 import { EnhancedDeviceHealthChart } from '../charts/EnhancedDeviceHealthChart';
 import { EnhancedDeviceComplianceChart } from '../charts/EnhancedDeviceComplianceChart';
@@ -25,39 +25,30 @@ export function CybercykoDashboard({ onNavigate }: CybercykoDashboardProps) {
     growth: '+12%'
   };
 
-  // Total Devices by Platform
-  const devicesByPlatformData = [
-    { name: 'Windows', value: 4250, color: '#FF5858' },
-    { name: 'macOS', value: 2180, color: '#084D2A' },
-    { name: 'iOS', value: 1540, color: '#36C9FF' },
-    { name: 'Android', value: 890, color: '#E6FF47' },
-    { name: 'Linux', value: 620, color: '#7DFF56' },
+  // Total devices by platform
+  const devicePlatformData = [
+    { name: 'Windows', value: 4500, color: '#FF4444' }, // Red
+    { name: 'macOS', value: 2500, color: '#114A28' },   // Dark Green
+    { name: 'iOS', value: 1200, color: '#36C9FF' },     // Light Blue
+    { name: 'Android', value: 800, color: '#FFCC00' },  // Yellow
+    { name: 'Linux', value: 460, color: '#00FF66' },    // Light Green
+  ];
+
+  // Active vs Inactive Users
+  const activeInactiveUsersData = [
+    { name: 'Active', value: totalUsersData.active, color: 'var(--chart-online)' },
+    { name: 'Inactive', value: totalUsersData.inactive, color: 'var(--chart-offline)' },
   ];
 
   // Active Devices and Last Contact Time
   const activeDevicesData = [
-    { name: 'Online Now', value: 85, fill: '#FF5858' },
+    { name: 'Online Now', value: 85, fill: '#00FF66' },
     { name: '< 1 hour', value: 70, fill: '#36C9FF' },
     { name: '< 24 hours', value: 50, fill: '#E6FF47' },
-    { name: '> 24 hours', value: 25, fill: '#084D2A' },
+    { name: '> 24 hours', value: 25, fill: '#FF4444' },
   ];
 
-  // Network Traffic Data
-  const networkTrafficData = [
-    { name: '00:00', inbound: 4.2, outbound: 2.4, total: 6.6 },
-    { name: '04:00', inbound: 3.8, outbound: 2.1, total: 5.9 },
-    { name: '08:00', inbound: 5.1, outbound: 3.2, total: 8.3 },
-    { name: '12:00', inbound: 4.7, outbound: 2.8, total: 7.5 },
-    { name: '16:00', inbound: 5.4, outbound: 3.5, total: 8.9 },
-    { name: '20:00', inbound: 4.9, outbound: 2.9, total: 7.8 },
-    { name: '24:00', inbound: 4.3, outbound: 2.5, total: 6.8 }
-  ];
 
-  const networkTrafficKeys = [
-    { key: 'inbound', color: '#00FF66', name: 'Inbound' },
-    { key: 'outbound', color: '#00CC52', name: 'Outbound' },
-    { key: 'total', color: '#66FF99', name: 'Total' },
-  ];
 
   // Active Users
   const activeUsersData = [
@@ -77,6 +68,8 @@ export function CybercykoDashboard({ onNavigate }: CybercykoDashboardProps) {
     inactive: 58,
     percentage: 76.3
   };
+
+
 
   // Top N Sites (based on traffic)
   const topSitesData = [
@@ -126,7 +119,7 @@ export function CybercykoDashboard({ onNavigate }: CybercykoDashboardProps) {
       {/* Top Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[16px] mb-[24px]">
         {/* Total Users */}
-        <div 
+        <div
           onClick={() => onNavigate?.('users')}
           className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10 cursor-pointer group"
         >
@@ -145,7 +138,7 @@ export function CybercykoDashboard({ onNavigate }: CybercykoDashboardProps) {
         </div>
 
         {/* Total Devices */}
-        <div 
+        <div
           onClick={() => onNavigate?.('devices')}
           className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10 cursor-pointer group"
         >
@@ -156,13 +149,13 @@ export function CybercykoDashboard({ onNavigate }: CybercykoDashboardProps) {
             <span className="text-[12px] text-[#00FF66] font-medium">+8%</span>
           </div>
           <p className="text-[28px] font-bold text-[#D5FFD6] mb-[4px]">
-            {devicesByPlatformData.reduce((sum, d) => sum + d.value, 0).toLocaleString()}
+            {devicePlatformData.reduce((sum, d) => sum + d.value, 0).toLocaleString()}
           </p>
           <p className="text-[12px] text-[#8F8F8F]">Total Devices</p>
         </div>
 
         {/* Total Policies */}
-        <div 
+        <div
           onClick={() => onNavigate?.('policies')}
           className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10 cursor-pointer group"
         >
@@ -181,7 +174,7 @@ export function CybercykoDashboard({ onNavigate }: CybercykoDashboardProps) {
         </div>
 
         {/* Threat Detection */}
-        <div 
+        <div
           onClick={() => onNavigate?.('threats')}
           className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] hover:border-[#FF4444] transition-all duration-300 hover:shadow-lg hover:shadow-[#FF4444]/10 cursor-pointer group"
         >
@@ -204,17 +197,17 @@ export function CybercykoDashboard({ onNavigate }: CybercykoDashboardProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[16px] mb-[16px]">
         {/* Total Devices by Platform */}
         <div className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[12px] aspect-[3/4] flex flex-col hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10">
-          <EnhancedPieChart data={devicesByPlatformData} title="Total Devices by Platform" />
+          <EnhancedPieChart data={devicePlatformData} title="Total Devices by Platform" />
+        </div>
+
+        {/* Active vs Inactive Users */}
+        <div className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[12px] aspect-[3/4] flex flex-col hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10">
+          <EnhancedPieChart data={activeInactiveUsersData} title="Active vs Inactive Users" />
         </div>
 
         {/* Active Devices and Last Contact Time */}
         <div className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] aspect-[3/4] flex flex-col hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10">
           <RadialBarChartComponent data={activeDevicesData} title="Active Devices & Last Contact Time" />
-        </div>
-
-        {/* Network Traffic */}
-        <div className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] aspect-[3/4] flex flex-col hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10">
-          <StackedAreaChart data={networkTrafficData} title="Network Traffic (GB/s)" dataKeys={networkTrafficKeys} />
         </div>
       </div>
 
@@ -236,13 +229,15 @@ export function CybercykoDashboard({ onNavigate }: CybercykoDashboardProps) {
         </div>
       </div>
 
+
+
       {/* Row 4: Top Sites, SSO Apps, Policies */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[16px] mb-[16px]">
         {/* Top N Sites (based on traffic) */}
         <div className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] aspect-[3/4] flex flex-col hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10">
-          <EnhancedHorizontalBarChart 
-            data={topSitesData} 
-            title="Top Sites (based on traffic)" 
+          <EnhancedHorizontalBarChart
+            data={topSitesData}
+            title="Top Sites (based on traffic)"
             subtitle="Last 24 hours"
             showIcons={true}
           />
@@ -250,9 +245,9 @@ export function CybercykoDashboard({ onNavigate }: CybercykoDashboardProps) {
 
         {/* All SSO Apps (based on traffic) */}
         <div className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] aspect-[3/4] flex flex-col hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10">
-          <EnhancedSSOAppsChart 
-            data={ssoAppsData} 
-            title="All SSO Apps (based on traffic)" 
+          <EnhancedSSOAppsChart
+            data={ssoAppsData}
+            title="All SSO Apps (based on traffic)"
             subtitle="Usage volume"
           />
         </div>
@@ -279,7 +274,7 @@ export function CybercykoDashboard({ onNavigate }: CybercykoDashboardProps) {
         {/* Malicious Activity and Threat Detection */}
         <div className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] aspect-[9/5] hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10">
           <h4 className="text-[14px] font-medium text-[#D5FFD6] mb-[20px]">Malicious Activity & Threat Detection</h4>
-          
+
           <div className="grid grid-cols-2 gap-[12px] mb-[32px]">
             <div className="p-[16px] bg-[rgba(255,68,68,0.05)] border border-[#FF4444] rounded-[12px]">
               <div className="flex items-center gap-[8px] mb-[8px]">
@@ -334,9 +329,8 @@ export function CybercykoDashboard({ onNavigate }: CybercykoDashboardProps) {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className={`text-[10px] font-medium ${
-                    threat.status === 'Blocked' ? 'text-[#00FF66]' : 'text-[#FFCC00]'
-                  }`}>
+                  <p className={`text-[10px] font-medium ${threat.status === 'Blocked' ? 'text-[#00FF66]' : 'text-[#FFCC00]'
+                    }`}>
                     {threat.status}
                   </p>
                   <p className="text-[10px] text-[#8F8F8F]">{threat.time}</p>

@@ -1,0 +1,1 @@
+how feature/threats-activity-security-search-enhancements:components/ClientMasterDashboard.tsx
