@@ -3,7 +3,7 @@ import { EnhancedPieChart } from '../charts/EnhancedPieChart';
 import { RadialBarChartComponent } from '../charts/RadialBarChartComponent';
 import { StackedAreaChart } from '../charts/StackedAreaChart';
 import { WaffleChart } from '../charts/WaffleChart';
-import { BubbleMap } from '../charts/BubbleMap';
+import { LeafletMap } from '../charts/LeafletMap';
 import { HorizontalBarChart } from '../charts/HorizontalBarChart';
 import { ButterflyChart } from '../charts/ButterflyChart';
 import { EnhancedDonutChart } from '../charts/EnhancedDonutChart';
@@ -181,7 +181,7 @@ export function NewDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[16px] mb-[16px]">
         {/* Bubble Map */}
         <div className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px]">
-          <BubbleMap title="Device Location (Global Distribution)" height={350} />
+          <LeafletMap title="Device Location (Global Distribution)" height={350} />
         </div>
 
         {/* Horizontal Bar Chart */}

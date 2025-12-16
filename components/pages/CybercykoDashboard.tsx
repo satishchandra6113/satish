@@ -10,7 +10,7 @@ import { EnhancedSSOAppsChart } from '../charts/EnhancedSSOAppsChart';
 import { EnhancedActiveUsersChart } from '../charts/EnhancedActiveUsersChart';
 import { EnhancedDeviceHealthChart } from '../charts/EnhancedDeviceHealthChart';
 import { EnhancedDeviceComplianceChart } from '../charts/EnhancedDeviceComplianceChart';
-import { BubbleMap } from '../charts/BubbleMap';
+import { LeafletMap } from '../charts/LeafletMap';
 
 interface CybercykoDashboardProps {
   onNavigate?: (page: string) => void;
@@ -264,7 +264,7 @@ export function CybercykoDashboard({ onNavigate }: CybercykoDashboardProps) {
         <div className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] aspect-[5/3] hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10">
           <h4 className="text-[14px] font-medium text-[#D5FFD6] mb-[16px]">Device Location (Global Distribution)</h4>
           <div className="h-[calc(100%-40px)]">
-            <BubbleMap />
+            <LeafletMap />
           </div>
         </div>
       </div>

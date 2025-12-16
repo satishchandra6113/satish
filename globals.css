@@ -165,3 +165,190 @@ input[type="range"].slider::-moz-range-thumb {
 path:focus {
   outline: none !important;
 }
+
+/* =============================================================================
+   LEAFLET MAP STYLES
+   ============================================================================= */
+
+/* Leaflet Dark Theme Overrides */
+.leaflet-map-container .leaflet-container {
+  background: #1a1d23 !important;
+  font-family: var(--font-family) !important;
+}
+
+.leaflet-map-container .leaflet-tile-pane {
+  opacity: 0.9;
+}
+
+/* Zoom controls styling */
+.leaflet-map-container .leaflet-control-zoom {
+  border: 1px solid #1A1A1A !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+.leaflet-map-container .leaflet-control-zoom a {
+  background: #0F0F0F !important;
+  color: #00FF66 !important;
+  border: none !important;
+  border-bottom: 1px solid #1A1A1A !important;
+  font-size: 18px !important;
+  font-weight: 600;
+  transition: all 0.2s ease !important;
+}
+
+.leaflet-map-container .leaflet-control-zoom a:hover {
+  background: #1A1A1A !important;
+  color: #00FF66 !important;
+  box-shadow: 0 0 12px rgba(0, 255, 102, 0.3) !important;
+}
+
+.leaflet-map-container .leaflet-control-zoom a:last-child {
+  border-bottom: none !important;
+}
+
+/* Custom Popup Styling */
+.custom-leaflet-popup .leaflet-popup-content-wrapper {
+  background: #0F0F0F !important;
+  border: 1px solid #1A1A1A !important;
+  border-radius: 12px !important;
+  box-shadow: 0 0 30px rgba(0, 255, 102, 0.15), 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+  padding: 0 !important;
+}
+
+.custom-leaflet-popup .leaflet-popup-content {
+  margin: 0 !important;
+  min-width: 220px !important;
+}
+
+.custom-leaflet-popup .leaflet-popup-tip {
+  background: #0F0F0F !important;
+  border: 1px solid #1A1A1A !important;
+  box-shadow: none !important;
+}
+
+.custom-leaflet-popup .leaflet-popup-close-button {
+  color: #8F8F8F !important;
+  font-size: 20px !important;
+  padding: 8px !important;
+  transition: color 0.2s ease !important;
+}
+
+.custom-leaflet-popup .leaflet-popup-close-button:hover {
+  color: #00FF66 !important;
+}
+
+/* =============================================================================
+   ANTI-GRAVITY FLOATING ANIMATIONS - GPU ACCELERATED
+   ============================================================================= */
+
+/* Active status - more motion (online users) */
+@keyframes float-active {
+
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(0, -7px, 0);
+  }
+}
+
+/* Gentle status - calm motion (away users) */
+@keyframes float-gentle {
+
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(0, -5px, 0);
+  }
+}
+
+/* Minimal status - very slow (offline users) */
+@keyframes float-minimal {
+
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(0, -2px, 0);
+  }
+}
+
+/* Apply floating animations with GPU acceleration */
+.float-active {
+  animation: float-active 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 8px rgba(0, 255, 102, 0.4));
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.float-gentle {
+  animation: float-gentle 5s ease-in-out infinite;
+  filter: drop-shadow(0 3px 6px rgba(255, 204, 0, 0.3));
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.float-minimal {
+  animation: float-minimal 7s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(255, 68, 68, 0.2));
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Custom marker wrapper with performance optimizations */
+.custom-leaflet-marker {
+  background: transparent !important;
+  border: none !important;
+  contain: layout style paint;
+}
+
+.leaflet-marker-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  contain: layout style paint;
+  isolation: isolate;
+}
+
+/* Marker hover effects */
+.marker-container {
+  contain: layout style paint;
+}
+
+.marker-container:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 16px rgba(0, 255, 102, 0.5) !important;
+  border-color: #00FF66 !important;
+}
+
+/* Disable default leaflet marker shadow */
+.leaflet-map-container .leaflet-marker-shadow {
+  display: none !important;
+}
+
+/* Optimize map tile rendering */
+.leaflet-map-container .leaflet-tile-container {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Smooth zoom transitions */
+.leaflet-map-container .leaflet-zoom-anim {
+  transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
