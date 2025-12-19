@@ -239,6 +239,18 @@ path:focus {
   color: #00FF66 !important;
 }
 
+/* Ensure popups stay within map bounds and can adjust position */
+.leaflet-map-container .leaflet-popup {
+  max-width: calc(100% - 20px) !important;
+  max-height: calc(100% - 20px) !important;
+  overflow: visible !important;
+}
+
+.leaflet-map-container .leaflet-popup-content-wrapper {
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
 /* =============================================================================
    ANTI-GRAVITY FLOATING ANIMATIONS - GPU ACCELERATED
    ============================================================================= */
@@ -324,6 +336,9 @@ path:focus {
   justify-content: center;
   contain: layout style paint;
   isolation: isolate;
+  /* Keep markers fixed - no animations */
+  animation: none !important;
+  transform: translate3d(0, 0, 0) !important;
 }
 
 /* Marker hover effects */
@@ -351,4 +366,22 @@ path:focus {
 /* Smooth zoom transitions */
 .leaflet-map-container .leaflet-zoom-anim {
   transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Prevent markers, icons, and UI from scaling on zoom - only tiles should zoom */
+.leaflet-map-container .leaflet-marker-icon {
+  /* Ensure markers maintain fixed size regardless of zoom */
+  transform-origin: center center !important;
+}
+
+.leaflet-map-container .custom-leaflet-marker {
+  transform-origin: center center !important;
+}
+
+.leaflet-map-container .leaflet-popup {
+  transform-origin: center center !important;
+}
+
+.leaflet-map-container .leaflet-control {
+  transform-origin: center center !important;
 }

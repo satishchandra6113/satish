@@ -89,12 +89,11 @@ const DEVICE_LOCATIONS: DeviceLocation[] = [
 
 function createCustomIcon(device: DeviceLocation): L.DivIcon {
     const statusColor = device.status === 'online' ? THEME.online : device.status === 'away' ? THEME.away : THEME.offline;
-    const animationClass = device.status === 'online' ? 'float-active' : device.status === 'away' ? 'float-gentle' : 'float-minimal';
 
     return L.divIcon({
         className: 'custom-leaflet-marker',
         html: `
-      <div class="leaflet-marker-wrapper ${animationClass}" style="animation-delay: ${(device.id * 0.3) % 2}s;">
+      <div class="leaflet-marker-wrapper" style="animation-delay: ${(device.id * 0.3) % 2}s;">
         <div class="marker-container" style="
           position: relative;
           width: 36px;
@@ -140,6 +139,120 @@ function MapEffects() {
     useEffect(() => {
         // Disable scroll wheel zoom initially
         map.scrollWheelZoom.disable();
+
+        // Prevent markers, icons, and UI from scaling on zoom
+        const preventScaling = () => {
+            const container = map.getContainer();
+            // Reset scale on all marker icons - preserve translation, remove scale
+            const markerIcons = container.querySelectorAll('.leaflet-marker-icon');
+            markerIcons.forEach((icon: Element) => {
+                const htmlIcon = icon as HTMLElement;
+                const currentTransform = htmlIcon.style.transform || '';
+                // Remove any scale() from transform, keep translation
+                const newTransform = currentTransform
+                    .replace(/\s*scale\([^)]+\)/g, '')
+                    .replace(/\s*scale3d\([^)]+\)/g, '')
+                    .trim();
+                if (newTransform !== currentTransform) {
+                    htmlIcon.style.transform = newTransform || 'translate3d(0, 0, 0)';
+                }
+            });
+            // Reset scale on popups
+            const popups = container.querySelectorAll('.leaflet-popup');
+            popups.forEach((popup: Element) => {
+                const htmlPopup = popup as HTMLElement;
+                const currentTransform = htmlPopup.style.transform || '';
+                const newTransform = currentTransform
+                    .replace(/\s*scale\([^)]+\)/g, '')
+                    .replace(/\s*scale3d\([^)]+\)/g, '')
+                    .trim();
+                if (newTransform !== currentTransform) {
+                    htmlPopup.style.transform = newTransform || 'translate3d(0, 0, 0)';
+                }
+            });
+            // Reset scale on controls
+            const controls = container.querySelectorAll('.leaflet-control');
+            controls.forEach((control: Element) => {
+                const htmlControl = control as HTMLElement;
+                const currentTransform = htmlControl.style.transform || '';
+                const newTransform = currentTransform
+                    .replace(/\s*scale\([^)]+\)/g, '')
+                    .replace(/\s*scale3d\([^)]+\)/g, '')
+                    .trim();
+                if (newTransform !== currentTransform) {
+                    htmlControl.style.transform = newTransform || 'translate3d(0, 0, 0)';
+                }
+            });
+        };
+
+        // Prevent scaling on zoom events
+        map.on('zoom', preventScaling);
+        map.on('zoomend', preventScaling);
+
+        // Adjust popup position when near edges (without panning map)
+        const adjustPopupPosition = (e?: any) => {
+            // Use setTimeout to ensure popup is fully rendered
+            setTimeout(() => {
+                const container = map.getContainer();
+                const popups = container.querySelectorAll('.leaflet-popup');
+                popups.forEach((popup: Element) => {
+                    const htmlPopup = popup as HTMLElement;
+                    if (htmlPopup.style.display === 'none') return;
+                    
+                    const popupContent = htmlPopup.querySelector('.leaflet-popup-content-wrapper') as HTMLElement;
+                    if (!popupContent) return;
+                    
+                    const popupRect = popupContent.getBoundingClientRect();
+                    const mapRect = container.getBoundingClientRect();
+                    const padding = 10;
+                    
+                    const relativeTop = popupRect.top - mapRect.top;
+                    const relativeLeft = popupRect.left - mapRect.left;
+                    const popupHeight = popupRect.height;
+                    const popupWidth = popupRect.width;
+                    
+                    let adjustY = 0;
+                    let adjustX = 0;
+                    
+                    // If popup is near top edge, adjust downward
+                    if (relativeTop < padding) {
+                        adjustY = padding - relativeTop;
+                    }
+                    
+                    // If popup is near bottom edge, adjust upward
+                    if (relativeTop + popupHeight > mapRect.height - padding) {
+                        adjustY = (mapRect.height - padding - popupHeight) - relativeTop;
+                    }
+                    
+                    // If popup is near left edge, adjust rightward
+                    if (relativeLeft < padding) {
+                        adjustX = padding - relativeLeft;
+                    }
+                    
+                    // If popup is near right edge, adjust leftward
+                    if (relativeLeft + popupWidth > mapRect.width - padding) {
+                        adjustX = (mapRect.width - padding - popupWidth) - relativeLeft;
+                    }
+                    
+                    // Apply adjustment using CSS transform
+                    if (adjustX !== 0 || adjustY !== 0) {
+                        const currentTransform = htmlPopup.style.transform || 'translate3d(0px, 0px, 0px)';
+                        const match = currentTransform.match(/translate3d\(([^)]+)\)/);
+                        if (match) {
+                            const parts = match[1].split(',').map(v => parseFloat(v.trim()));
+                            const newX = (parts[0] || 0) + adjustX;
+                            const newY = (parts[1] || 0) + adjustY;
+                            htmlPopup.style.transform = `translate3d(${newX}px, ${newY}px, 0px)`;
+                        }
+                    }
+                });
+            }, 10);
+        };
+
+        // Adjust popup position on popup open and map events
+        map.on('popupopen', adjustPopupPosition);
+        map.on('moveend', adjustPopupPosition);
+        map.on('resize', adjustPopupPosition);
 
         // Create overlay hint element
         const container = map.getContainer();
@@ -200,6 +313,11 @@ function MapEffects() {
 
         // Cleanup
         return () => {
+            map.off('zoom', preventScaling);
+            map.off('zoomend', preventScaling);
+            map.off('popupopen', adjustPopupPosition);
+            map.off('moveend', adjustPopupPosition);
+            map.off('resize', adjustPopupPosition);
             container.removeEventListener('mouseenter', handleMouseEnter);
             container.removeEventListener('mouseleave', handleMouseLeave);
             container.removeEventListener('click', handleClick);
@@ -288,6 +406,9 @@ export function LeafletMap({ title, height = 500 }: LeafletMapProps) {
                         >
                             <Popup
                                 className="custom-leaflet-popup"
+                                autoPan={false}
+                                keepInView={true}
+                                offset={[0, -36]}
                             >
                                 <div style={{
                                     background: THEME.bgCard,
