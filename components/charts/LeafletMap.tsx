@@ -99,27 +99,24 @@ function createCustomIcon(device: DeviceLocation): L.DivIcon {
           width: 36px;
           height: 36px;
           background: ${THEME.bgCard};
-          border-radius: 12px 12px 12px 2px;
-          border: 1.5px solid ${THEME.border};
-          box-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 0 0 0 ${statusColor};
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.3);
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
           transition: all 0.3s ease;
         ">
-          <div class="status-dot" style="
+          <span style="font-size: 20px; user-select: none; margin-bottom: 2px;">${device.emoji}</span>
+          <div class="status-bar" style="
             position: absolute;
-            top: -4px;
-            right: -4px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
             background: ${statusColor};
-            border: 2px solid ${THEME.bgCard};
-            box-shadow: 0 0 6px ${statusColor};
           "></div>
-          <span style="font-size: 18px; user-select: none;">${device.emoji}</span>
         </div>
       </div>
     `,
@@ -198,42 +195,42 @@ function MapEffects() {
                 popups.forEach((popup: Element) => {
                     const htmlPopup = popup as HTMLElement;
                     if (htmlPopup.style.display === 'none') return;
-                    
+
                     const popupContent = htmlPopup.querySelector('.leaflet-popup-content-wrapper') as HTMLElement;
                     if (!popupContent) return;
-                    
+
                     const popupRect = popupContent.getBoundingClientRect();
                     const mapRect = container.getBoundingClientRect();
                     const padding = 10;
-                    
+
                     const relativeTop = popupRect.top - mapRect.top;
                     const relativeLeft = popupRect.left - mapRect.left;
                     const popupHeight = popupRect.height;
                     const popupWidth = popupRect.width;
-                    
+
                     let adjustY = 0;
                     let adjustX = 0;
-                    
+
                     // If popup is near top edge, adjust downward
                     if (relativeTop < padding) {
                         adjustY = padding - relativeTop;
                     }
-                    
+
                     // If popup is near bottom edge, adjust upward
                     if (relativeTop + popupHeight > mapRect.height - padding) {
                         adjustY = (mapRect.height - padding - popupHeight) - relativeTop;
                     }
-                    
+
                     // If popup is near left edge, adjust rightward
                     if (relativeLeft < padding) {
                         adjustX = padding - relativeLeft;
                     }
-                    
+
                     // If popup is near right edge, adjust leftward
                     if (relativeLeft + popupWidth > mapRect.width - padding) {
                         adjustX = (mapRect.width - padding - popupWidth) - relativeLeft;
                     }
-                    
+
                     // Apply adjustment using CSS transform
                     if (adjustX !== 0 || adjustY !== 0) {
                         const currentTransform = htmlPopup.style.transform || 'translate3d(0px, 0px, 0px)';
