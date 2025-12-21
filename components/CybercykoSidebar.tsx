@@ -146,11 +146,10 @@ export function CybercykoSidebar({ currentPage, onNavigate }: SidebarProps) {
                 <button
                   key={item.id}
                   onClick={() => onNavigate(item.id)}
-                  className={`menu-item w-full flex items-center gap-[12px] rounded-[12px] px-[18px] py-[12px] transition-colors group relative ${
-                    isActive
+                  className={`menu-item w-full flex items-center gap-[12px] rounded-[12px] px-[18px] py-[12px] transition-colors group relative ${isActive
                       ? 'bg-gradient-to-r from-[rgba(0,255,102,0.2)] to-[rgba(0,255,102,0.05)] border border-[#00FF66] text-[#00FF66]'
                       : 'text-[#8F8F8F] hover:bg-[rgba(255,255,255,0.05)] hover:text-[#D5FFD6]'
-                  }`}
+                    }`}
                 >
                   <div className="relative flex-shrink-0 w-[20px] flex items-center justify-center">
                     <Icon size={20} />
@@ -188,11 +187,15 @@ export function CybercykoSidebar({ currentPage, onNavigate }: SidebarProps) {
             </p>
             {bottomItems.map((item) => {
               const Icon = item.icon;
+              const isActive = currentPage === item.id;
               return (
                 <button
                   key={item.id}
                   onClick={() => onNavigate(item.id)}
-                  className="menu-item w-full flex items-center gap-[12px] rounded-[12px] px-[18px] py-[12px] text-[#8F8F8F] hover:bg-[rgba(255,255,255,0.05)] hover:text-[#D5FFD6] transition-colors group relative"
+                  className={`menu-item w-full flex items-center gap-[12px] rounded-[12px] px-[18px] py-[12px] transition-colors group relative ${isActive
+                      ? 'bg-gradient-to-r from-[rgba(0,255,102,0.2)] to-[rgba(0,255,102,0.05)] border border-[#00FF66] text-[#00FF66]'
+                      : 'text-[#8F8F8F] hover:bg-[rgba(255,255,255,0.05)] hover:text-[#D5FFD6]'
+                    }`}
                 >
                   <div className="flex-shrink-0 w-[20px] flex items-center justify-center">
                     <Icon size={20} />
@@ -200,6 +203,9 @@ export function CybercykoSidebar({ currentPage, onNavigate }: SidebarProps) {
                   <span className="sidebar-text text-[14px] font-medium">
                     {item.label}
                   </span>
+                  {isActive && (
+                    <ChevronRight size={16} className="chevron-icon ml-auto flex-shrink-0" />
+                  )}
                   {/* Tooltip */}
                   <div className="tooltip absolute left-full ml-[12px] px-[8px] py-[4px] bg-[#1A1A1A] text-[#D5FFD6] text-[12px] rounded-[6px] whitespace-nowrap z-50 border border-[#2A2A2A]">
                     {item.label}

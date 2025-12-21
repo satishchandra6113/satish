@@ -36,6 +36,7 @@ const renderCustomLabel = (props: any, activeIndex: number | null, currentIndex:
   const RADIAN = Math.PI / 180;
 
   // Hide labels when hovering and this is not the active slice
+  // Show all labels immediately when not hovering (activeIndex is null)
   if (activeIndex !== null && activeIndex !== currentIndex) {
     return null;
   }
@@ -121,13 +122,18 @@ export function EnhancedPieChart({ data, title }: EnhancedPieChartProps) {
   // Add total to each data item for tooltip
   const dataWithTotal = data.map(item => ({ ...item, total }));
 
+  // Handle mouse leave to immediately reset state and show all labels
+  const handleMouseLeave = () => {
+    setActiveIndex(null);
+  };
+
   return (
-    <div className="w-full h-full flex flex-col" onMouseLeave={() => setActiveIndex(null)}>
+    <div className="w-full h-full flex flex-col" onMouseLeave={handleMouseLeave}>
       {title && (
         <h4 className="text-[14px] font-medium text-[#D5FFD6] mb-[8px] flex-shrink-0">{title}</h4>
       )}
       {/* Pie Chart Section */}
-      <div className="flex-1 w-full min-h-[200px] relative mb-[16px]">
+      <div className="flex-1 w-full min-h-[200px] relative mb-[16px] animate-slide-in" onMouseLeave={handleMouseLeave}>
         <ResponsiveContainer width="100%" height="100%" minHeight={200}>
           <PieChart>
             <Pie
@@ -144,7 +150,11 @@ export function EnhancedPieChart({ data, title }: EnhancedPieChartProps) {
               }}
               labelLine={false}
               onMouseEnter={(_, index) => setActiveIndex(index)}
-              onMouseLeave={() => setActiveIndex(null)}
+              onMouseLeave={handleMouseLeave}
+              isAnimationActive={true}
+              animationBegin={0}
+              animationDuration={800}
+              animationEasing="ease-out"
             >
               {data.map((entry, index) => (
                 <Cell
@@ -155,12 +165,15 @@ export function EnhancedPieChart({ data, title }: EnhancedPieChartProps) {
                   opacity={activeIndex === null ? 1 : activeIndex === index ? 1 : 0.3}
                   style={{
                     filter: activeIndex === index ? 'brightness(1.2)' : 'none',
-                    outline: 'none'
+                    outline: 'none',
+                    transition: 'opacity 0.1s ease-out'
                   }}
                 />
               ))}
             </Pie>
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip 
+              content={<CustomTooltip />}
+            />
           </PieChart>
         </ResponsiveContainer>
       </div>
@@ -175,9 +188,10 @@ export function EnhancedPieChart({ data, title }: EnhancedPieChartProps) {
               className="flex items-center gap-[8px] cursor-pointer"
               style={{
                 opacity: activeIndex === null ? 1 : isActive ? 1 : 0.3,
+                transition: 'opacity 0.1s ease-out'
               }}
               onMouseEnter={() => setActiveIndex(index)}
-              onMouseLeave={() => setActiveIndex(null)}
+              onMouseLeave={handleMouseLeave}
             >
               <div
                 className="w-[10px] h-[10px] rounded-full"

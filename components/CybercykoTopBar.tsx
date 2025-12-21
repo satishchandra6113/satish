@@ -208,7 +208,7 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
   };
 
   return (
-    <div className="sticky top-0 z-30 bg-gradient-to-r from-[#0D0D0D]/95 to-[#050505]/95 backdrop-blur-[20px] border-b border-[#1A1A1A]">
+    <div className="sticky top-0 z-[10001] bg-gradient-to-r from-[#0D0D0D]/95 to-[#050505]/95 backdrop-blur-[20px] border-b border-[#1A1A1A]">
       <div className="flex items-center justify-between px-[24px] py-[16px]">
         {/* Left: Title */}
         <div className="flex items-center gap-[16px]">
@@ -280,10 +280,6 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                   <History size={14} />
                 </button>
               )}
-              <div className="flex items-center gap-[4px] text-[#5A5A5A] text-[11px] ml-[8px]">
-                <kbd className="px-[6px] py-[2px] bg-[#1A1A1A] rounded-[4px] font-mono text-[10px]">⌘</kbd>
-                <kbd className="px-[6px] py-[2px] bg-[#1A1A1A] rounded-[4px] font-mono text-[10px]">K</kbd>
-              </div>
             </div>
 
             {/* Search Dropdown */}
@@ -394,7 +390,7 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
 
           {/* Notification Icon with Dropdown */}
           <div
-            className="relative"
+            className="relative z-[10002]"
             ref={notificationRef}
             onMouseEnter={() => openNotifications()}
             onMouseLeave={() => setShowNotifications(false)}
@@ -418,7 +414,7 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
               <>
                 <div className="absolute right-0 top-full h-[8px] w-[300px]" />
                 <div
-                  className="absolute right-0 top-full mt-[8px] w-[300px] bg-[#0A0A0A] border border-[#00FF66] rounded-[16px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden z-50"
+                  className="absolute right-0 top-full mt-[8px] w-[300px] bg-[#0A0A0A] border border-[#00FF66] rounded-[16px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden z-[10000]"
                   style={{ animation: 'fadeInDown 0.2s ease-out' }}
                 >
                   <div className="p-[16px] border-b border-[#1A1A1A] bg-gradient-to-r from-[rgba(0,255,102,0.1)] to-transparent">
@@ -458,7 +454,7 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
 
           {/* User Profile with Enhanced Dropdown */}
           <div
-            className="relative"
+            className="relative z-[10002]"
             ref={profileRef}
             onMouseEnter={() => setShowProfileMenu(true)}
             onMouseLeave={() => setShowProfileMenu(false)}
@@ -487,7 +483,7 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
               <>
                 <div className="absolute right-0 top-full h-[8px] w-[300px]" />
                 <div
-                  className="absolute right-0 top-full mt-[8px] w-[300px] bg-[#0A0A0A] border border-[#00FF66] rounded-[16px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden max-h-[80vh] overflow-y-auto z-50"
+                  className="absolute right-0 top-full mt-[8px] w-[300px] bg-[#0A0A0A] border border-[#00FF66] rounded-[16px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden max-h-[80vh] overflow-y-auto z-[10000]"
                   style={{ animation: 'fadeInDown 0.2s ease-out' }}
                 >
                   {/* Profile Header */}
@@ -532,24 +528,6 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                     </div>
                   </div>
 
-                  {/* Dark Mode Toggle */}
-                  <div className="px-[12px] py-[10px] border-b border-[#1A1A1A]">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-[8px]">
-                        {isDarkMode ? <Moon size={14} className="text-[#8F8F8F]" /> : <Sun size={14} className="text-[#FFCC00]" />}
-                        <span className="text-[12px] text-[#D5FFD6]">Dark Mode</span>
-                      </div>
-                      <button
-                        onClick={() => setIsDarkMode(!isDarkMode)}
-                        className={`relative w-[40px] h-[22px] rounded-full transition-all ${isDarkMode ? 'bg-[#00FF66]' : 'bg-[#2A2A2A]'
-                          }`}
-                      >
-                        <div className={`absolute top-[3px] w-[16px] h-[16px] rounded-full bg-white shadow transition-transform ${isDarkMode ? 'translate-x-[21px]' : 'translate-x-[3px]'
-                          }`} />
-                      </button>
-                    </div>
-                  </div>
-
                   {/* Menu Items */}
                   <div className="py-[6px]">
                     {[
@@ -581,22 +559,6 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                         )}
                       </button>
                     ))}
-                  </div>
-
-                  {/* Keyboard Shortcuts */}
-                  <div className="px-[12px] py-[8px] border-t border-[#1A1A1A] bg-[rgba(0,0,0,0.2)]">
-                    <div className="flex items-center justify-between">
-                      {[
-                        { key: '⌘K', label: 'Search' },
-                        { key: '⌘/', label: 'Help' },
-                        { key: 'Esc', label: 'Close' },
-                      ].map((shortcut) => (
-                        <div key={shortcut.key} className="flex items-center gap-[3px]">
-                          <kbd className="px-[5px] py-[1px] bg-[#1A1A1A] rounded text-[8px] font-mono text-[#8F8F8F]">{shortcut.key}</kbd>
-                          <span className="text-[9px] text-[#5A5A5A]">{shortcut.label}</span>
-                        </div>
-                      ))}
-                    </div>
                   </div>
 
                   {/* Sign Out */}
