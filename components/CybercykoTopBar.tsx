@@ -82,6 +82,14 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
   const [language, setLanguage] = useState('English');
 
+  // Profile form state
+  const [profileData, setProfileData] = useState({
+    fullName: 'Admin User',
+    email: 'admin@cybercyko.com',
+  });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
   // Mock data
   const [notifications, setNotifications] = useState([
     { id: 1, type: 'success', title: 'Device Approved', message: 'MacBook Pro has been approved.', time: '2 min ago', read: false },
@@ -96,6 +104,63 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
   ]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  // Save profile changes
+  const handleSaveProfile = async () => {
+    setIsSavingProfile(true);
+    setSaveSuccess(false);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    setIsSavingProfile(false);
+    setSaveSuccess(true);
+    
+    // Close modal after showing success message
+    setTimeout(() => {
+      setSaveSuccess(false);
+      setShowAdminModal(false);
+    }, 1500);
+  };
+
+  // Sign out handler
+  const handleSignOut = () => {
+    // Close dropdowns and modals
+    setShowProfileMenu(false);
+    setShowAdminModal(false);
+    setShowNotifications(false);
+    
+    // Show confirmation or perform sign out
+    // In a real app, this would:
+    // 1. Clear authentication tokens
+    // 2. Clear user session
+    // 3. Redirect to login page
+    
+    // For now, we'll show an alert and could redirect
+    if (window.confirm('Are you sure you want to sign out?')) {
+      // Clear any stored data
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userData');
+      
+      // Redirect to login (or reload page)
+      // window.location.href = '/login';
+      // For demo purposes, we'll just reload
+      window.location.reload();
+    }
+  };
+
+  // Handle keyboard shortcut for sign out (⌘Q or Ctrl+Q)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'q') {
+        e.preventDefault();
+        handleSignOut();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Open notifications and mark them read
   const openNotifications = () => {
@@ -464,8 +529,8 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                 }`}
             >
               <div className="text-right hidden sm:block">
-                <p className={`text-[12px] font-medium transition-colors ${showProfileMenu ? 'text-[#00FF66]' : 'text-[#D5FFD6]'}`}>Admin User</p>
-                <p className="text-[10px] text-[#8F8F8F]">Admin@cybercyko.com</p>
+                <p className={`text-[12px] font-medium transition-colors ${showProfileMenu ? 'text-[#00FF66]' : 'text-[#D5FFD6]'}`}>{profileData.fullName}</p>
+                <p className="text-[10px] text-[#8F8F8F]">{profileData.email}</p>
               </div>
               <div className="relative">
                 <div className={`w-[40px] h-[40px] rounded-[12px] bg-gradient-to-br from-[#00FF66] to-[#00CC52] flex items-center justify-center border-2 transition-all ${showProfileMenu ? 'border-[#00FF66] scale-105' : 'border-[#1A1A1A]'
@@ -498,8 +563,8 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[15px] font-semibold text-[#D5FFD6]">Admin User</p>
-                        <p className="text-[11px] text-[#8F8F8F] truncate">Admin@cybercyko.com</p>
+                        <p className="text-[15px] font-semibold text-[#D5FFD6]">{profileData.fullName}</p>
+                        <p className="text-[11px] text-[#8F8F8F] truncate">{profileData.email}</p>
                         <span className="inline-flex items-center gap-[4px] px-[6px] py-[2px] bg-[#00FF66]/20 text-[#00FF66] text-[9px] font-semibold rounded-full mt-[4px]">
                           <Shield size={9} />
                           Administrator
@@ -563,7 +628,10 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
 
                   {/* Sign Out */}
                   <div className="border-t border-[#1A1A1A] p-[6px]">
-                    <button className="w-full flex items-center gap-[10px] px-[10px] py-[8px] text-[#FF4444] hover:bg-[rgba(255,68,68,0.1)] rounded-[6px] transition-all group">
+                    <button 
+                      onClick={handleSignOut}
+                      className="w-full flex items-center gap-[10px] px-[10px] py-[8px] text-[#FF4444] hover:bg-[rgba(255,68,68,0.1)] rounded-[6px] transition-all group"
+                    >
                       <div className="w-[28px] h-[28px] rounded-[6px] bg-[rgba(255,68,68,0.1)] group-hover:bg-[rgba(255,68,68,0.2)] flex items-center justify-center transition-all">
                         <LogOut size={14} />
                       </div>
@@ -593,8 +661,8 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                   <User size={22} className="text-[#050505]" />
                 </div>
                 <div>
-                  <p className="text-[16px] font-semibold text-white">Admin User</p>
-                  <p className="text-[12px] text-[#8F8F8F]">Manage your account</p>
+                  <p className="text-[16px] font-semibold text-white">{profileData.fullName}</p>
+                  <p className="text-[12px] text-[#8F8F8F]">{profileData.email}</p>
                 </div>
               </div>
               <button
@@ -631,20 +699,30 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
             <div className="p-[20px] flex-1 overflow-y-auto">
               {adminModalTab === 'profile' && (
                 <div className="space-y-[16px]">
+                  {saveSuccess && (
+                    <div className="p-[12px] bg-[rgba(0,255,102,0.1)] border border-[#00FF66]/30 rounded-[10px] flex items-center gap-[8px] animate-slide-in">
+                      <Check size={16} className="text-[#00FF66]" />
+                      <span className="text-[13px] text-[#00FF66] font-medium">Profile updated successfully!</span>
+                    </div>
+                  )}
                   <div>
                     <label className="block text-[11px] text-[#8F8F8F] uppercase tracking-wider mb-[8px]">Full Name</label>
                     <input
                       type="text"
-                      defaultValue="Admin User"
+                      value={profileData.fullName}
+                      onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
                       className="w-full bg-[#0F0F0F] border border-[#1A1A1A] rounded-[10px] px-[14px] py-[12px] text-white text-[14px] focus:outline-none focus:border-[#00FF66] transition-colors"
+                      disabled={isSavingProfile}
                     />
                   </div>
                   <div>
                     <label className="block text-[11px] text-[#8F8F8F] uppercase tracking-wider mb-[8px]">Email Address</label>
                     <input
                       type="email"
-                      defaultValue="admin@cybercyko.com"
+                      value={profileData.email}
+                      onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
                       className="w-full bg-[#0F0F0F] border border-[#1A1A1A] rounded-[10px] px-[14px] py-[12px] text-white text-[14px] focus:outline-none focus:border-[#00FF66] transition-colors"
+                      disabled={isSavingProfile}
                     />
                   </div>
                   <div>
@@ -654,8 +732,22 @@ export function CybercykoTopBar({ currentPageTitle, onNavigate }: TopBarProps) {
                       Administrator
                     </div>
                   </div>
-                  <button className="w-full py-[12px] bg-[#00FF66] text-[#050505] text-[14px] font-semibold rounded-[10px] hover:bg-[#00DD55] transition-all mt-[8px]">
-                    Save Changes
+                  <button 
+                    onClick={handleSaveProfile}
+                    disabled={isSavingProfile || !profileData.fullName || !profileData.email}
+                    className="w-full py-[12px] bg-[#00FF66] text-[#050505] text-[14px] font-semibold rounded-[10px] hover:bg-[#00DD55] transition-all mt-[8px] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-[8px]"
+                  >
+                    {isSavingProfile ? (
+                      <>
+                        <div className="w-[16px] h-[16px] border-2 border-[#050505]/30 border-t-[#050505] rounded-full animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Check size={16} />
+                        Save Changes
+                      </>
+                    )}
                   </button>
                 </div>
               )}

@@ -3,14 +3,14 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 interface StackedAreaChartProps {
   data: any[];
   title?: string;
-  dataKeys: { key: string; color: string; name: string }[];
+  dataKeys: { key: string; color: string; name: string; stackId?: string }[];
 }
 
 export function StackedAreaChart({ data, title, dataKeys }: StackedAreaChartProps) {
   return (
     <div className="w-full h-full flex flex-col">
       {title && (
-        <h4 className="text-[14px] font-medium text-white mb-[16px] flex-shrink-0">{title}</h4>
+        <h4 className="text-[14px] font-medium text-[#D5FFD6] mb-[16px] flex-shrink-0">{title}</h4>
       )}
       <div className="flex-1 w-full min-h-[200px]">
         <ResponsiveContainer width="100%" height="100%" minHeight={200}>
@@ -32,6 +32,8 @@ export function StackedAreaChart({ data, title, dataKeys }: StackedAreaChartProp
             <YAxis
               stroke="#8F8F8F"
               tick={{ fill: '#8F8F8F', fontSize: 11 }}
+              label={{ value: 'GB/s', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#8F8F8F', fontSize: 11 } }}
+              domain={[0, 20]}
             />
             <Tooltip
               contentStyle={{
@@ -50,7 +52,7 @@ export function StackedAreaChart({ data, title, dataKeys }: StackedAreaChartProp
                 key={index}
                 type="monotone"
                 dataKey={item.key}
-                stackId="1"
+                stackId={item.stackId !== undefined ? item.stackId : "1"}
                 stroke={item.color}
                 fill={`url(#gradient-${item.key})`}
                 name={item.name}

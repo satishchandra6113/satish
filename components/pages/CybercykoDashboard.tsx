@@ -1,6 +1,7 @@
 import { Users, Monitor, Activity, Shield, AlertTriangle, CheckCircle } from 'lucide-react';
 import { EnhancedPieChart } from '../charts/EnhancedPieChart';
 import { RadialBarChartComponent } from '../charts/RadialBarChartComponent';
+import { StackedAreaChart } from '../charts/StackedAreaChart';
 
 
 import { WaffleChart } from '../charts/WaffleChart';
@@ -46,6 +47,23 @@ export function CybercykoDashboard({ onNavigate }: CybercykoDashboardProps) {
     { name: '< 1 hour', value: 70, fill: '#36C9FF' },
     { name: '< 24 hours', value: 50, fill: '#E6FF47' },
     { name: '> 24 hours', value: 25, fill: '#FF4444' },
+  ];
+
+  // Network Traffic Data (GB/s) - Time series data with Inbound, Outbound, and Total
+  const networkTrafficTimeData = [
+    { name: '00:00', inbound: 2.4, outbound: 1.8, total: 4.2 },
+    { name: '04:00', inbound: 3.8, outbound: 2.1, total: 5.9 },
+    { name: '08:00', inbound: 5.1, outbound: 3.2, total: 8.3 },
+    { name: '12:00', inbound: 4.7, outbound: 2.8, total: 7.5 },
+    { name: '16:00', inbound: 5.4, outbound: 3.5, total: 8.9 },
+    { name: '20:00', inbound: 4.9, outbound: 2.9, total: 7.8 },
+    { name: '24:00', inbound: 4.3, outbound: 2.5, total: 6.8 },
+  ];
+
+  const networkTrafficDataKeys = [
+    { key: 'inbound', color: '#00FF66', name: 'Inbound' },
+    { key: 'outbound', color: '#36C9FF', name: 'Outbound' },
+    { key: 'total', color: '#00CC52', name: 'Total', stackId: '2' },
   ];
 
 
@@ -200,14 +218,18 @@ export function CybercykoDashboard({ onNavigate }: CybercykoDashboardProps) {
           <EnhancedPieChart data={devicePlatformData} title="Total Devices by Platform" />
         </div>
 
-        {/* Active vs Inactive Users */}
+        {/* Active Devices and Last Contact Time */}
         <div className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[12px] aspect-[3/4] flex flex-col hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10">
-          <EnhancedPieChart data={activeInactiveUsersData} title="Active vs Inactive Users" />
+          <RadialBarChartComponent data={activeDevicesData} title="Active Devices & Last Contact Time" />
         </div>
 
-        {/* Active Devices and Last Contact Time */}
+        {/* Network Traffic GB/s */}
         <div className="bg-gradient-to-br from-[#0F0F0F] to-[#0A0A0A] border border-[#1A1A1A] rounded-[16px] p-[20px] aspect-[3/4] flex flex-col hover:border-[#00FF66] transition-all duration-300 hover:shadow-lg hover:shadow-[#00FF66]/10">
-          <RadialBarChartComponent data={activeDevicesData} title="Active Devices & Last Contact Time" />
+          <StackedAreaChart 
+            data={networkTrafficTimeData} 
+            title="Network Traffic GB/s"
+            dataKeys={networkTrafficDataKeys}
+          />
         </div>
       </div>
 
